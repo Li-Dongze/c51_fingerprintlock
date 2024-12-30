@@ -1,0 +1,185 @@
+C51 COMPILER V9.54   MAIN                                                                  12/30/2024 22:36:03 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: E:\004-Programming\02-Embedded\Keil5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\Dev;
+                    -..\Sys;..\User) DEBUG OBJECTEXTEND PRINT(.\Listings\main.lst) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include <STC89C5xRC.H>
+   2          #include "config.h"
+   3          #include "bmp.h" 
+   4          
+   5          /*****************************************任务函数声明***********************************************/
+   6          
+   7          //任务调度机制
+   8          void Task_Init(void);
+   9          void TaskRun(void);
+  10          
+  11          //具体任务函数
+  12          void Led_Task(void);
+  13          void key_Task(void);
+  14          void Oled_Task(void);
+  15          
+  16          /*****************************************外设全局变量***********************************************/
+  17          
+  18          //led专用变量
+  19          uint8_t ucled;
+  20          
+  21          //按键专用变量
+  22          uint8_t Key_Value;
+  23          uint8_t Key_Down;
+  24          uint8_t Key_Old;
+  25          
+  26          //任务调度专用变量
+  27          uint16_t TaskTimer[TASKNUM_MAX];
+  28          TaskStruct Task[] = {
+  29              {Led_Task, 100},
+  30                  {key_Task, 20},
+  31                  {Oled_Task, 2000}
+  32          };
+  33          /*****************************************用户全局变量***********************************************/
+  34          char str[10];
+  35          int count = 0;
+  36          
+  37          /****************************************************************************************************/
+  38          
+  39          
+  40          /*------------------------------------------主函数--------------------------------------------------*/
+  41          int main(void)
+  42          {
+  43   1              Task_Init();
+  44   1          
+  45   1          delay_ms(1000);
+  46   1          
+  47   1              OLED_Init();//初始化OLED
+  48   1              OLED_ColorTurn(0);//0正常显示，1 反色显示
+  49   1          OLED_DisplayTurn(0);//0正常显示 1 屏幕翻转显示
+  50   1          
+  51   1              Timer1Init();
+  52   1              EA = 1;
+  53   1              
+  54   1              while(1)
+C51 COMPILER V9.54   MAIN                                                                  12/30/2024 22:36:03 PAGE 2   
+
+  55   1              {
+  56   2                      TaskRun();
+  57   2      //        OLED_DrawBMP(0,0,128,64,BMP1);
+  58   2      //              delay_ms(500);
+  59   2      //              OLED_Clear();
+  60   2      //              OLED_ShowChinese(0,0,0,16);//中
+  61   2      //              OLED_ShowChinese(18,0,1,16);//景
+  62   2      //              OLED_ShowChinese(36,0,2,16);//园
+  63   2      //              OLED_ShowChinese(54,0,3,16);//电
+  64   2      //              OLED_ShowChinese(72,0,4,16);//子
+  65   2      //              OLED_ShowChinese(90,0,5,16);//科
+  66   2      //              OLED_ShowChinese(108,0,6,16);//技
+  67   2      //              OLED_ShowString(8,2,"ZHONGJINGYUAN",16);
+  68   2      //              OLED_ShowString(20,4,"2014/05/01",16);
+  69   2      //              OLED_ShowString(0,6,"ASCII:",16);  
+  70   2      //              OLED_ShowString(63,6,"CODE:",16);
+  71   2      //              delay_ms(500);
+  72   2      //              OLED_Clear();
+  73   2              }
+  74   1      }
+  75          
+  76          /*-----------------------------------------中断服务函数--------------------------------------------------*
+             -/
+  77          void Timer1_Rountine(void)      interrupt 3
+  78          {
+  79   1              uint8_t i;
+  80   1          
+  81   1          // 手动重装
+  82   1          TL1 = 0x66;         //设置定时初值
+  83   1              TH1 = 0xFC;             //设置定时初值
+  84   1          
+  85   1              //任务定时器递减
+  86   1              for(i = 0; i < TASKNUM_MAX; i++)
+  87   1                      if(TaskTimer[i])
+  88   1                              TaskTimer[i]--;
+  89   1      }
+  90          
+  91          /*-----------------------------------------具体任务--------------------------------------------------*/
+  92          void Led_Task(void)
+  93          {
+  94   1          P0 ^= 0x01;
+  95   1      }       
+  96          
+  97          void key_Task(void)
+  98          {
+  99   1              //三行代码
+ 100   1              Key_Value = Key_Read();
+ 101   1              Key_Down = Key_Value&(Key_Value^Key_Old);
+ 102   1              Key_Old = Key_Value;
+ 103   1              
+ 104   1              switch(Key_Down)
+ 105   1              {
+ 106   2                      case 0:
+ 107   2                              
+ 108   2                      break;
+ 109   2              }
+ 110   1      }
+ 111          
+ 112          void Oled_Task(void)
+ 113          {
+ 114   1          
+ 115   1          sprintf(str, "hello world");
+C51 COMPILER V9.54   MAIN                                                                  12/30/2024 22:36:03 PAGE 3   
+
+ 116   1          OLED_ShowString(0,0,str,16);
+ 117   1          
+ 118   1      }
+ 119          
+ 120          /*-----------------------------------------任务调度--------------------------------------------------*/
+ 121          void Task_Init(void)
+ 122          {
+ 123   1              uint8_t NTask;
+ 124   1              for(NTask = 0; NTask < sizeof(Task)/sizeof(Task[0]); NTask++)
+ 125   1              {
+ 126   2                      TaskTimer[NTask] = Task[NTask].TaskPeriod;
+ 127   2              }
+ 128   1      }
+ 129          
+ 130          void TaskRun(void)
+ 131          {
+ 132   1              uint8_t NTask;
+ 133   1              for(NTask = 0; NTask < sizeof(Task)/sizeof(Task[0]); NTask++)
+ 134   1              {
+ 135   2                      if(TaskTimer[NTask] == 0)
+ 136   2                      {
+ 137   3                              TaskTimer[NTask] = Task[NTask].TaskPeriod;
+ 138   3                              (Task[NTask].pTask)();
+ 139   3                      }
+ 140   2              }
+ 141   1      }
+ 142          
+ 143          
+ 144          
+ 145          
+ 146          
+ 147          
+ 148          
+ 149          
+ 150          
+ 151          
+ 152          
+ 153          
+ 154          
+ 155          
+ 156          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    251    ----
+   CONSTANT SIZE    =   1036    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     39       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
