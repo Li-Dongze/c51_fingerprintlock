@@ -1,4 +1,4 @@
-C51 COMPILER V9.54   OLED                                                                  12/30/2024 22:36:03 PAGE 1   
+C51 COMPILER V9.54   OLED                                                                  12/31/2024 12:14:10 PAGE 1   
 
 
 C51 COMPILER V9.54, COMPILATION OF MODULE OLED
@@ -62,7 +62,7 @@ line level    source
   52   1              if(i==0)
   53   1                      {
   54   2                              OLED_WR_Byte(0xC8,OLED_CMD);//正常显示
-C51 COMPILER V9.54   OLED                                                                  12/30/2024 22:36:03 PAGE 2   
+C51 COMPILER V9.54   OLED                                                                  12/31/2024 12:14:10 PAGE 2   
 
   55   2                              OLED_WR_Byte(0xA1,OLED_CMD);
   56   2                      }
@@ -126,7 +126,7 @@ line level    source
  114   3          }
  115   2                      else
  116   2                      {
-C51 COMPILER V9.54   OLED                                                                  12/30/2024 22:36:03 PAGE 3   
+C51 COMPILER V9.54   OLED                                                                  12/31/2024 12:14:10 PAGE 3   
 
  117   3                              OLED_SDA_Clr();
  118   3          }
@@ -190,7 +190,7 @@ line level    source
  176   1      }
  177          
  178          //在指定位置显示一个字符,包括部分字符
-C51 COMPILER V9.54   OLED                                                                  12/30/2024 22:36:03 PAGE 4   
+C51 COMPILER V9.54   OLED                                                                  12/31/2024 12:14:10 PAGE 4   
 
  179          //x:0~127
  180          //y:0~63                                 
@@ -254,7 +254,7 @@ line level    source
  238   2                      else x+=sizey/2;
  239   2              }
  240   1      }
-C51 COMPILER V9.54   OLED                                                                  12/30/2024 22:36:03 PAGE 5   
+C51 COMPILER V9.54   OLED                                                                  12/31/2024 12:14:10 PAGE 5   
 
  241          //显示汉字
  242          void OLED_ShowChinese(u8 x,u8 y,u8 no,u8 sizey)
@@ -318,7 +318,7 @@ line level    source
  300   1              OLED_WR_Byte(0xDA,OLED_CMD);//--set com pins hardware configuration
  301   1              OLED_WR_Byte(0x12,OLED_CMD);
  302   1              OLED_WR_Byte(0xDB,OLED_CMD);//--set vcomh
-C51 COMPILER V9.54   OLED                                                                  12/30/2024 22:36:03 PAGE 6   
+C51 COMPILER V9.54   OLED                                                                  12/31/2024 12:14:10 PAGE 6   
 
  303   1              OLED_WR_Byte(0x40,OLED_CMD);//Set VCOM Deselect Level
  304   1              OLED_WR_Byte(0x20,OLED_CMD);//-Set Page Addressing Mode (0x00/0x01/0x02)

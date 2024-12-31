@@ -32,6 +32,7 @@ TaskStruct Task[] = {
 };
 /*****************************************用户全局变量***********************************************/
 char str[10];
+uint8_t eepromBuf[10];
 int count = 0;
 
 /****************************************************************************************************/
@@ -47,6 +48,8 @@ int main(void)
 	OLED_Init();//初始化OLED
 	OLED_ColorTurn(0);//0正常显示，1 反色显示
     OLED_DisplayTurn(0);//0正常显示 1 屏幕翻转显示
+    
+    EEPROM_Write("hello", 0, 5);
     
 	Timer1Init();
 	EA = 1;
@@ -91,7 +94,7 @@ void Timer1_Rountine(void)	interrupt 3
 /*-----------------------------------------具体任务--------------------------------------------------*/
 void Led_Task(void)
 {
-    P0 ^= 0x01;
+    //P0 ^= 0x01;
 }	
 
 void key_Task(void)
@@ -103,18 +106,35 @@ void key_Task(void)
 	
 	switch(Key_Down)
 	{
-		case 0:
-			
+		case 1:
+            P04 = ~P04;
+        break;
+        
+        case 2:
+            P05 = ~P05;
+        break;
+        
+        case 3:
+            P06 = ~P06;
+        break;
+        
+        case 4:
+            P07 = ~P07;			
 		break;
+        
+        default:
+        break;
 	}
 }
 
 void Oled_Task(void)
 {
     
-    sprintf(str, "hello world");
+    sprintf(str, "count = %d", count++);
     OLED_ShowString(0,0,str,16);
     
+    EEPROM_Read(eepromBuf, 0, 5);
+    OLED_ShowString(0,2,(char *)eepromBuf,16);
 }
 
 /*-----------------------------------------任务调度--------------------------------------------------*/

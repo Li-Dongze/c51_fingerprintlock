@@ -1,6 +1,7 @@
 ".\Objects\key.obj",
 ".\Objects\led.obj",
 ".\Objects\oled.obj",
+".\Objects\i2c.obj",
 ".\Objects\timer1.obj",
 ".\Objects\main.obj" 
 TO ".\Objects\Student_ID" 

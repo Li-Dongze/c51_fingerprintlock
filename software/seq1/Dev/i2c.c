@@ -1,7 +1,7 @@
 #include "i2c.h"
 
-sbit scl = P2^0;
-sbit sda = P2^1;
+sbit scl = P2^7;
+sbit sda = P2^6;
 
 //I2C延时
 static void I2C_Delay(unsigned char n)
@@ -105,41 +105,41 @@ void I2CSendAck(unsigned char ackbit)
 
 /*----------------------------------PCF8591-------------------------------------*/
 
-uint8_t PCF8591_Adc(uint8_t channel_control)
-{
-	uint8_t temp;
-	
-	I2CStart();
-	I2CSendByte(0x90);//发送器件地址，准备写
-	I2CWaitAck();
-	
-	I2CSendByte(channel_control);//发送命令，确定是哪个通道
-	I2CWaitAck();
-	
-	I2CStart();
-	I2CSendByte(0x91);//发送器件地址，准备读
-	I2CWaitAck();
-	
-	temp = I2CReceiveByte();
-	I2CSendAck(1);//主机发送非应答
-	I2CStop();
-	
-	return temp;
-}
+//uint8_t PCF8591_Adc(uint8_t channel_control)
+//{
+//	uint8_t temp;
+//	
+//	I2CStart();
+//	I2CSendByte(0x90);//发送器件地址，准备写
+//	I2CWaitAck();
+//	
+//	I2CSendByte(channel_control);//发送命令，确定是哪个通道
+//	I2CWaitAck();
+//	
+//	I2CStart();
+//	I2CSendByte(0x91);//发送器件地址，准备读
+//	I2CWaitAck();
+//	
+//	temp = I2CReceiveByte();
+//	I2CSendAck(1);//主机发送非应答
+//	I2CStop();
+//	
+//	return temp;
+//}
 
-void PCF8591_Dac(uint8_t tans_data)
-{
-	I2CStart();
-	I2CSendByte(0x90);//发送器件地址，准备写
-	I2CWaitAck();
-	
-	I2CSendByte(0x41);//发送命令，使能
-	I2CWaitAck();
-	
-	I2CSendByte(tans_data);
-	I2CWaitAck();
-	I2CStop();
-}
+//void PCF8591_Dac(uint8_t tans_data)
+//{
+//	I2CStart();
+//	I2CSendByte(0x90);//发送器件地址，准备写
+//	I2CWaitAck();
+//	
+//	I2CSendByte(0x41);//发送命令，使能
+//	I2CWaitAck();
+//	
+//	I2CSendByte(tans_data);
+//	I2CWaitAck();
+//	I2CStop();
+//}
 
 /*----------------------------------EEPROM-------------------------------------*/
 

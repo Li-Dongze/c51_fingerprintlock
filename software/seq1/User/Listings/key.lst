@@ -1,4 +1,4 @@
-C51 COMPILER V9.54   KEY                                                                   12/30/2024 22:36:03 PAGE 1   
+C51 COMPILER V9.54   KEY                                                                   12/31/2024 12:14:10 PAGE 1   
 
 
 C51 COMPILER V9.54, COMPILATION OF MODULE KEY
@@ -28,41 +28,41 @@ line level    source
   18   1              uint8_t Key_Value;
   19   1              uint16_t Key_New;
   20   1              
-  21   1              P44 = 0; P42 = 1; P35 = 1; P34 = 1;
-  22   1              Key_New = P3&0x0f;
-  23   1              P44 = 1; P42 = 0; P35 = 1; P34 = 1;
-  24   1              Key_New = (Key_New<<4)|(P3&0x0f);
-  25   1              P44 = 1; P42 = 1; P35 = 0; P34 = 1;
-  26   1              Key_New = (Key_New<<4)|(P3&0x0f);
-  27   1              P44 = 1; P42 = 1; P35 = 1; P34 = 0;
-  28   1              Key_New = (Key_New<<4)|(P3&0x0f);
+  21   1              P13 = 0; P12 = 1; P11 = 1; P10 = 1;
+  22   1              Key_New = P0&0x0f;
+  23   1              P13 = 1; P12 = 0; P11 = 1; P10 = 1;
+  24   1              Key_New = (Key_New<<4)|(P0&0x0f);
+  25   1              P13 = 1; P12 = 1; P11 = 0; P10 = 1;
+  26   1              Key_New = (Key_New<<4)|(P0&0x0f);
+  27   1              P13 = 1; P12 = 1; P11 = 1; P10 = 0;
+  28   1              Key_New = (Key_New<<4)|(P0&0x0f);
   29   1              
   30   1              switch(~Key_New)
   31   1              {
-  32   2                      case 0x8000:    Key_Value = 4;  break;
-  33   2                      case 0x4000:    Key_Value = 5;  break;
-  34   2                      case 0x2000:    Key_Value = 6;  break;
-  35   2                      case 0x1000:    Key_Value = 7;  break;
+  32   2                      case 0x8000:    Key_Value = 13; break;
+  33   2                      case 0x4000:    Key_Value = 9;  break;
+  34   2                      case 0x2000:    Key_Value = 5;  break;
+  35   2                      case 0x1000:    Key_Value = 1;  break;
   36   2                      
-  37   2                      case 0x0800:    Key_Value = 8;  break;
-  38   2                      case 0x0400:    Key_Value = 9;  break;
-  39   2                      case 0x0200:    Key_Value = 10; break;
-  40   2                      case 0x0100:    Key_Value = 11; break;
+  37   2                      case 0x0800:    Key_Value = 14; break;
+  38   2                      case 0x0400:    Key_Value = 10; break;
+  39   2                      case 0x0200:    Key_Value = 6;  break;
+  40   2                      case 0x0100:    Key_Value = 2;  break;
   41   2                      
-  42   2                      case 0x0080:    Key_Value = 12; break;
-  43   2                      case 0x0040:    Key_Value = 13; break;
-  44   2                      case 0x0020:    Key_Value = 14; break;
-  45   2                      case 0x0010:    Key_Value = 15; break;
+  42   2                      case 0x0080:    Key_Value = 15; break;
+  43   2                      case 0x0040:    Key_Value = 11; break;
+  44   2                      case 0x0020:    Key_Value = 7;  break;
+  45   2                      case 0x0010:    Key_Value = 3;  break;
   46   2                      
   47   2                      case 0x0008:    Key_Value = 16; break;
-  48   2                      case 0x0004:    Key_Value = 17; break;
-  49   2                      case 0x0002:    Key_Value = 18; break;
-  50   2                      case 0x0001:    Key_Value = 19; break;
+  48   2                      case 0x0004:    Key_Value = 12; break;
+  49   2                      case 0x0002:    Key_Value = 8;  break;
+  50   2                      case 0x0001:    Key_Value = 4;  break;
   51   2                      
   52   2                      default:                        Key_Value = 0;  break;
   53   2              }
   54   1              
-C51 COMPILER V9.54   KEY                                                                   12/30/2024 22:36:03 PAGE 2   
+C51 COMPILER V9.54   KEY                                                                   12/31/2024 12:14:10 PAGE 2   
 
   55   1              return Key_Value;
   56   1      }
