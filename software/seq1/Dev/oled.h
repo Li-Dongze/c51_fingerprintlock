@@ -2,10 +2,6 @@
 #define __OLED_H
 
 #include "config.h"		
- 
-#define  u8 unsigned char 
-#define  u16 unsigned int
-#define  u32 unsigned int
 	
 #define OLED_CMD  0	//Ğ´ÃüÁî
 #define OLED_DATA 1	//Ğ´Êı¾İ

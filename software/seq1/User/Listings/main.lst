@@ -1,10 +1,11 @@
-C51 COMPILER V9.54   MAIN                                                                  12/31/2024 12:15:27 PAGE 1   
+C51 COMPILER V9.54   MAIN                                                                  12/31/2024 21:11:35 PAGE 1   
 
 
 C51 COMPILER V9.54, COMPILATION OF MODULE MAIN
 OBJECT MODULE PLACED IN .\Objects\main.obj
-COMPILER INVOKED BY: E:\004-Programming\02-Embedded\Keil5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\Dev;
-                    -..\Sys;..\User) DEBUG OBJECTEXTEND PRINT(.\Listings\main.lst) OBJECT(.\Objects\main.obj)
+COMPILER INVOKED BY: E:\004-Programming\02-Embedded\Keil5\C51\BIN\C51.EXE main.c COMPACT OPTIMIZE(8,SPEED) BROWSE MODP2 
+                    -INCDIR(..\Dev;..\Sys;..\User;..\Dev\menu;..\Dev\mg200) DEBUG OBJECTEXTEND PRINT(.\Listings\main.lst) OBJECT(.\Objects\ma
+                    -in.obj)
 
 line level    source
 
@@ -34,171 +35,189 @@ line level    source
   24          uint8_t Key_Old;
   25          
   26          //任务调度专用变量
-  27          uint16_t TaskTimer[TASKNUM_MAX];
-  28          TaskStruct Task[] = {
+  27          uint16_t pdata TaskTimer[TASKNUM_MAX];
+  28          TaskStruct pdata Task[] = {
   29              {Led_Task, 100},
-  30                  {key_Task, 20},
-  31                  {Oled_Task, 2000}
+  30                  {key_Task, 10},
+  31                  {Oled_Task, 1000}
   32          };
   33          /*****************************************用户全局变量***********************************************/
-  34          char str[10];
-  35          uint8_t eepromBuf[10];
-  36          int count = 0;
+  34          //char str[10];
+  35          //uint8_t eepromBuf[10];
+  36          //int count = 0;
   37          
-  38          /****************************************************************************************************/
+  38          uint8_t menuKey_flag;
   39          
-  40          
-  41          /*------------------------------------------主函数--------------------------------------------------*/
-  42          int main(void)
-  43          {
-  44   1              Task_Init();
-  45   1          
-  46   1          delay_ms(1000);
+  40          /****************************************************************************************************/
+  41          
+  42          
+  43          /*------------------------------------------主函数--------------------------------------------------*/
+  44          int main(void)
+  45          {
+  46   1              Task_Init();
   47   1          
-  48   1              OLED_Init();//初始化OLED
-  49   1              OLED_ColorTurn(0);//0正常显示，1 反色显示
-  50   1          OLED_DisplayTurn(0);//0正常显示 1 屏幕翻转显示
-  51   1          
-  52   1          EEPROM_Write("hello", 0, 5);
+  48   1          //delay_ms(1000);
+  49   1          
+  50   1              OLED_Init();//初始化OLED
+  51   1              OLED_ColorTurn(0);//0正常显示，1 反色显示
+  52   1          OLED_DisplayTurn(0);//0正常显示 1 屏幕翻转显示
   53   1          
-  54   1              Timer1Init();
-C51 COMPILER V9.54   MAIN                                                                  12/31/2024 12:15:27 PAGE 2   
+C51 COMPILER V9.54   MAIN                                                                  12/31/2024 21:11:35 PAGE 2   
 
-  55   1              EA = 1;
-  56   1              
-  57   1              while(1)
-  58   1              {
-  59   2                      TaskRun();
-  60   2      //        OLED_DrawBMP(0,0,128,64,BMP1);
-  61   2      //              delay_ms(500);
-  62   2      //              OLED_Clear();
-  63   2      //              OLED_ShowChinese(0,0,0,16);//中
-  64   2      //              OLED_ShowChinese(18,0,1,16);//景
-  65   2      //              OLED_ShowChinese(36,0,2,16);//园
-  66   2      //              OLED_ShowChinese(54,0,3,16);//电
-  67   2      //              OLED_ShowChinese(72,0,4,16);//子
-  68   2      //              OLED_ShowChinese(90,0,5,16);//科
-  69   2      //              OLED_ShowChinese(108,0,6,16);//技
-  70   2      //              OLED_ShowString(8,2,"ZHONGJINGYUAN",16);
-  71   2      //              OLED_ShowString(20,4,"2014/05/01",16);
-  72   2      //              OLED_ShowString(0,6,"ASCII:",16);  
-  73   2      //              OLED_ShowString(63,6,"CODE:",16);
-  74   2      //              delay_ms(500);
-  75   2      //              OLED_Clear();
-  76   2              }
-  77   1      }
-  78          
-  79          /*-----------------------------------------中断服务函数--------------------------------------------------*
+  54   1          menu_init();
+  55   1          
+  56   1          //EEPROM_Write("hello", 0, 5);
+  57   1          
+  58   1              Timer0_Init();
+  59   1          Uart1_Init();
+  60   1              EA = 1;
+  61   1          
+  62   1          //sprintf(str, "hello\n");
+  63   1          UART_SendString("hello");
+  64   1              
+  65   1              while(1)
+  66   1              {
+  67   2                      TaskRun();
+  68   2              }
+  69   1      }
+  70          
+  71          /*-----------------------------------------中断服务函数--------------------------------------------------*
              -/
-  80          void Timer1_Rountine(void)      interrupt 3
-  81          {
-  82   1              uint8_t i;
-  83   1          
-  84   1          // 手动重装
-  85   1          TL1 = 0x66;         //设置定时初值
-  86   1              TH1 = 0xFC;             //设置定时初值
-  87   1          
-  88   1              //任务定时器递减
-  89   1              for(i = 0; i < TASKNUM_MAX; i++)
-  90   1                      if(TaskTimer[i])
-  91   1                              TaskTimer[i]--;
-  92   1      }
-  93          
-  94          /*-----------------------------------------具体任务--------------------------------------------------*/
-  95          void Led_Task(void)
-  96          {
-  97   1          //P0 ^= 0x01;
-  98   1      }       
-  99          
- 100          void key_Task(void)
- 101          {
- 102   1              //三行代码
- 103   1              Key_Value = Key_Read();
- 104   1              Key_Down = Key_Value&(Key_Value^Key_Old);
- 105   1              Key_Old = Key_Value;
- 106   1              
- 107   1              switch(Key_Down)
- 108   1              {
- 109   2                      case 1:
- 110   2                  P04 = ~P04;
- 111   2              break;
- 112   2              
- 113   2              case 2:
- 114   2                  P05 = ~P05;
- 115   2              break;
-C51 COMPILER V9.54   MAIN                                                                  12/31/2024 12:15:27 PAGE 3   
+  72          void Timer0_Rountine(void)      interrupt 1
+  73          {
+  74   1              uint8_t i;
+  75   1          
+  76   1          // 手动重装
+  77   1          TL0 = 0x66;                         //设置定时初始值
+  78   1              TH0 = 0xFC;                             //设置定时初始值
+  79   1          
+  80   1              //任务定时器递减
+  81   1              for(i = 0; i < TASKNUM_MAX; i++)
+  82   1                      if(TaskTimer[i])
+  83   1                              TaskTimer[i]--;
+  84   1      }
+  85          
+  86          void Uart1_Isr(void) interrupt 4
+  87          {
+  88   1              if (RI)                         //检测串口1接收中断
+  89   1              {
+  90   2              
+  91   2                      RI = 0;                 //清除串口1接收中断请求位
+  92   2              }
+  93   1          
+  94   1      //    if (TI)                           //检测串口1发送中断
+  95   1      //    {
+  96   1      //        
+  97   1      //        TI = 0;
+  98   1      //    }
+  99   1      }
+ 100          
+ 101          /*-----------------------------------------具体任务--------------------------------------------------*/
+ 102          void Led_Task(void)
+ 103          {
+ 104   1          //P0 ^= 0x01;
+ 105   1      }       
+ 106          
+ 107          void key_Task(void)
+ 108          {
+ 109   1              //三行代码
+ 110   1              Key_Value = Key_Read();
+ 111   1              Key_Down = Key_Value&(Key_Value^Key_Old);
+ 112   1              Key_Old = Key_Value;
+ 113   1              
+ 114   1              switch(Key_Down)
+C51 COMPILER V9.54   MAIN                                                                  12/31/2024 21:11:35 PAGE 3   
 
- 116   2              
- 117   2              case 3:
- 118   2                  P06 = ~P06;
+ 115   1              {
+ 116   2                      case 13:
+ 117   2                  //P04 = ~P04;
+ 118   2                  menuKey_flag = 13;
  119   2              break;
  120   2              
- 121   2              case 4:
- 122   2                  P07 = ~P07;                 
- 123   2                      break;
- 124   2              
- 125   2              default:
- 126   2              break;
- 127   2              }
- 128   1      }
- 129          
- 130          void Oled_Task(void)
- 131          {
- 132   1          
- 133   1          sprintf(str, "count = %d", count++);
- 134   1          OLED_ShowString(0,0,str,16);
- 135   1          
- 136   1          EEPROM_Read(eepromBuf, 0, 5);
- 137   1          OLED_ShowString(0,2,(char *)eepromBuf,16);
- 138   1      }
- 139          
- 140          /*-----------------------------------------任务调度--------------------------------------------------*/
- 141          void Task_Init(void)
- 142          {
- 143   1              uint8_t NTask;
- 144   1              for(NTask = 0; NTask < sizeof(Task)/sizeof(Task[0]); NTask++)
- 145   1              {
- 146   2                      TaskTimer[NTask] = Task[NTask].TaskPeriod;
- 147   2              }
- 148   1      }
- 149          
- 150          void TaskRun(void)
- 151          {
- 152   1              uint8_t NTask;
- 153   1              for(NTask = 0; NTask < sizeof(Task)/sizeof(Task[0]); NTask++)
- 154   1              {
- 155   2                      if(TaskTimer[NTask] == 0)
- 156   2                      {
- 157   3                              TaskTimer[NTask] = Task[NTask].TaskPeriod;
- 158   3                              (Task[NTask].pTask)();
- 159   3                      }
- 160   2              }
- 161   1      }
- 162          
- 163          
- 164          
- 165          
- 166          
+ 121   2              case 14:
+ 122   2                  //P05 = ~P05;
+ 123   2                  menuKey_flag = 14;
+ 124   2              break;
+ 125   2              
+ 126   2              case 15:
+ 127   2                  //P06 = ~P06;
+ 128   2                  menuKey_flag = 15; 
+ 129   2              break;
+ 130   2              
+ 131   2              case 16:
+ 132   2                  //P07 = ~P07;                       
+ 133   2                  menuKey_flag = 16;
+ 134   2                      break;
+ 135   2              
+ 136   2              default:
+ 137   2              break;
+ 138   2              }
+ 139   1      
+ 140   1          //menu(Key_Down);
+ 141   1      }
+ 142          
+ 143          void Oled_Task(void)
+ 144          {
+ 145   1      //    // oled测试
+ 146   1      //    sprintf(str, "count = %d", count++);
+ 147   1      //    OLED_ShowString(0,0,str,16);
+ 148   1      //    
+ 149   1      //    // eeprom测试
+ 150   1      //    EEPROM_Read(eepromBuf, 0, 5);
+ 151   1      //    OLED_ShowString(0,2,(char *)eepromBuf,16);
+ 152   1             
+ 153   1              menu(menuKey_flag);
+ 154   1              menuKey_flag = 0;
+ 155   1          
+ 156   1      }
+ 157          
+ 158          /*-----------------------------------------任务调度--------------------------------------------------*/
+ 159          void Task_Init(void)
+ 160          {
+ 161   1              uint8_t NTask;
+ 162   1              for(NTask = 0; NTask < sizeof(Task)/sizeof(Task[0]); NTask++)
+ 163   1              {
+ 164   2                      TaskTimer[NTask] = Task[NTask].TaskPeriod;
+ 165   2              }
+ 166   1      }
  167          
- 168          
- 169          
- 170          
- 171          
- 172          
- 173          
- 174          
- 175          
- 176          
+ 168          void TaskRun(void)
+ 169          {
+ 170   1              uint8_t NTask;
+ 171   1              for(NTask = 0; NTask < sizeof(Task)/sizeof(Task[0]); NTask++)
+ 172   1              {
+ 173   2                      if(TaskTimer[NTask] == 0)
+ 174   2                      {
+ 175   3                              TaskTimer[NTask] = Task[NTask].TaskPeriod;
+ 176   3                              (Task[NTask].pTask)();
+C51 COMPILER V9.54   MAIN                                                                  12/31/2024 21:11:35 PAGE 4   
 
-C51 COMPILER V9.54   MAIN                                                                  12/31/2024 12:15:27 PAGE 4   
+ 177   3                      }
+ 178   2              }
+ 179   1      }
+ 180          
+ 181          
+ 182          
+ 183          
+ 184          
+ 185          
+ 186          
+ 187          
+ 188          
+ 189          
+ 190          
+ 191          
+ 192          
+ 193          
+ 194          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    331    ----
-   CONSTANT SIZE    =   1041    ----
+   CODE SIZE        =    295    ----
+   CONSTANT SIZE    =   1030    ----
    XDATA SIZE       =   ----    ----
-   PDATA SIZE       =   ----    ----
-   DATA SIZE        =     49       1
+   PDATA SIZE       =     28       1
+   DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----    ----
 END OF MODULE INFORMATION.

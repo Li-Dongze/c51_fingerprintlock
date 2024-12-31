@@ -5,6 +5,10 @@ typedef unsigned char 			uint8_t;
 typedef unsigned short int 	    uint16_t;
 typedef unsigned int 		    uint32_t;
 
+#define  u8 unsigned char 
+#define  u16 unsigned int
+#define  u32 unsigned int
+
 /*************************宏定义*******************************/
 #define TASKNUM_MAX	4
 
@@ -21,18 +25,20 @@ typedef struct{
 #include <intrins.h>
 
 /*************************外设头文件*******************************/
-#include "bsp_Init.h"
 #include "led.h"
 #include "key.h"
-#include "seg.h"
-#include "ds1302.h"
-#include "ds18b20.h"
 #include "i2c.h"
 #include "timer1.h"
 
 #include "oled.h"
-#include "dht11.h"
+#include "menu.h"
+#include "uart.h"
+#include "MG200.h"
 
+#define WKUP_PRES   13
+#define KEY1_PRES   14
+#define KEY0_PRES   15
+#define KEY2_PRES   16
 
 
 

@@ -3,7 +3,7 @@
 
 #include "config.h"
 
-void Timer1Init(void);
+void Timer0_Init(void);
 
 
 

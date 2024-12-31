@@ -1,0 +1,236 @@
+C51 COMPILER V9.54   MG200                                                                 12/31/2024 18:55:30 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE MG200
+OBJECT MODULE PLACED IN .\Objects\MG200.obj
+COMPILER INVOKED BY: E:\004-Programming\02-Embedded\Keil5\C51\BIN\C51.EXE ..\Dev\mg200\MG200.c COMPACT OPTIMIZE(8,SPEED)
+                    - BROWSE MODP2 INCDIR(..\Dev;..\Sys;..\User;..\Dev\menu;..\Dev\mg200) DEBUG OBJECTEXTEND PRINT(.\Listings\MG200.lst) OBJE
+                    -CT(.\Objects\MG200.obj)
+
+line level    source
+
+   1          #include "MG200.h"
+   2          
+   3          typedef struct {
+   4              unsigned char buff[8];
+   5              unsigned char TC_Flag;
+   6          } MG200_REC;
+   7          
+   8          MG200_REC mg200_rec;
+   9          /*
+  10          函数功能：MG200发送数据包
+  11          形参：
+  12          u8 cmd   发送发送指令码
+  13          u8 parameter 发送参数
+  14          返回值：void
+  15          函数说明：
+  16          */
+  17          void Mg200_SendData(u8 cmd,u8 parameter)
+  18          {
+  19   1              u8 checksum;
+  20   1              
+  21   1              UART_SendByte(0x6c);//起始码
+  22   1              UART_SendByte(0x63);//发送地址 --- MCU
+  23   1              UART_SendByte(0x62);//接收地址 --- MG200
+  24   1              UART_SendByte(cmd);//指令码
+  25   1              UART_SendByte(parameter);//参数
+  26   1              UART_SendByte(0x00);//预留
+  27   1              /*计算校验和*/
+  28   1              checksum = (0x63 + 0x62 + cmd + parameter + 0x00) & 0xff;
+  29   1              UART_SendByte(checksum);//校验和        
+  30   1      }
+  31          
+  32          /*
+  33          函数功能：MG200接收数据包
+  34          形参：
+  35          u8 cmd    接收指令码   注意：接收指令码跟发送指令码一样
+  36          u8 *result  接收返回值 --- 结果
+  37          u8 *parameter 接收参数
+  38          返回值：u8   接收正常函数返回0      接收非正常函数返回非0
+  39          函数说明：
+  40          */
+  41          u8 Mg200_RecData(u8 cmd,u8 *result,u8 *parameter)
+  42          {
+  43   1              
+  44   1              u8 checksum;
+  45   1              
+  46   1              //等待数据接收完成   TC_Flag置1为数据接收完成
+  47   1              while(!mg200_rec.TC_Flag);
+  48   1              mg200_rec.TC_Flag = 0;//清空标志位
+  49   1              
+  50   1              if(mg200_rec.buff[0] != 0x6c)
+  51   1              {
+  52   2                      return 1;
+  53   2              }               
+C51 COMPILER V9.54   MG200                                                                 12/31/2024 18:55:30 PAGE 2   
+
+  54   1              if(mg200_rec.buff[1] != 0x62)
+  55   1              {
+  56   2                      return 2;
+  57   2              }
+  58   1              if(mg200_rec.buff[2] != 0x63)
+  59   1              {
+  60   2                      return 3;
+  61   2              }
+  62   1              if(mg200_rec.buff[3] != cmd)
+  63   1              {
+  64   2                      return 4;
+  65   2              }
+  66   1              
+  67   1              *result = mg200_rec.buff[4];//接收返回值
+  68   1              *parameter = mg200_rec.buff[5];//接收参数
+  69   1              
+  70   1              if(mg200_rec.buff[6] != 0x00)
+  71   1              {
+  72   2                      return 5;
+  73   2              }
+  74   1       
+  75   1              checksum = (0x62 + 0x63 + cmd + *result + *parameter + 0x00) & 0xff;
+  76   1              if(mg200_rec.buff[7] != checksum)
+  77   1              {
+  78   2                      return 6;
+  79   2              }
+  80   1              return 0;//接收正常返回0
+  81   1      }
+  82          
+  83          /*
+  84          函数功能：提取指纹特征量
+  85          形参：u8 num   决定第几次提取指纹特征量    0 - 4  
+  86          返回值：u8    返回result结果
+  87          函数说明：
+  88          */
+  89          u8 CaptureAndExtract(u8 num)
+  90          {
+  91   1              
+  92   1              u8 result;
+  93   1              u8 parameter;
+  94   1              
+  95   1              printf("请按下手指\r\n");
+  96   1              //等待手指按下
+  97   1              while(!MG200_DETECT);
+  98   1              
+  99   1              Mg200_SendData(0x51,num);//发送数据包
+ 100   1              if(Mg200_RecData(0x51,&result,&parameter) == 0)
+ 101   1              {
+ 102   2                      //接收数据正常
+ 103   2                      switch(result)
+ 104   2                      {
+ 105   3                              case 0x00:printf("抓取指纹图像及特征量提取成功\r\n");break;
+ 106   3                              default:printf("抓取指纹图像及特征量提取失败\r\n");break;
+ 107   3                      }                       
+ 108   2              }
+ 109   1              else
+ 110   1              {
+ 111   2                      printf("通信失败\r\n");
+ 112   2                      return 0xff;
+ 113   2              }
+ 114   1              
+ 115   1              return result;
+C51 COMPILER V9.54   MG200                                                                 12/31/2024 18:55:30 PAGE 3   
+
+ 116   1              
+ 117   1      }
+ 118          
+ 119          /*
+ 120          函数功能：注册指纹
+ 121          形参：void
+ 122          返回值：u8    返回result结果
+ 123          0:注册成功     非0：注册失败
+ 124          先提取三次指纹特征量
+ 125          函数说明：
+ 126          */
+ 127          u8 Enroll(u8 num)
+ 128          {
+ 129   1              u8 ret;
+ 130   1              u8 result;
+ 131   1              u8 parameter;
+ 132   1              
+ 133   1              printf("第一次提取指纹特征量\r\n");
+ 134   1              do
+ 135   1              {
+ 136   2                      ret = CaptureAndExtract(0x00);
+ 137   2              }while(ret);
+ 138   1              printf("第二次提取指纹特征量\r\n");
+ 139   1              do
+ 140   1              {
+ 141   2                      ret = CaptureAndExtract(0x01);
+ 142   2              }while(ret);
+ 143   1              printf("第三次提取指纹特征量\r\n");
+ 144   1              do
+ 145   1              {
+ 146   2                      ret = CaptureAndExtract(0x02);
+ 147   2              }while(ret);
+ 148   1              
+ 149   1              //提取指纹特征量完成，开始发送注册指纹指令
+ 150   1              
+ 151   1              Mg200_SendData(0x7f,num);//发送数据包
+ 152   1              if(Mg200_RecData(0x7f,&result,&parameter) == 0)
+ 153   1              {
+ 154   2                      //接收数据正常
+ 155   2                      switch(result)
+ 156   2                      {
+ 157   3                              case 0x00:printf("注册指纹成功！！！！！\r\n");break;
+ 158   3                              default:printf("注册指纹失败\r\n");break;
+ 159   3                      }                       
+ 160   2              }
+ 161   1              else
+ 162   1              {
+ 163   2                      printf("通信失败\r\n");
+ 164   2                      return 0xff;
+ 165   2              }
+ 166   1              return result;
+ 167   1      }
+ 168          
+ 169          
+ 170          /*
+ 171          函数功能：比对指纹
+ 172          形参：void
+ 173          返回值：返回值 非0 ：对比成功，且为ID号     0：比对失败
+ 174          u8   参数    非零：ID号（比对成功）      零：比对失败（找不到ID）
+ 175          先提取一次指纹特征量
+ 176          函数说明：
+ 177          */
+C51 COMPILER V9.54   MG200                                                                 12/31/2024 18:55:30 PAGE 4   
+
+ 178          u8 Match1N(void)
+ 179          {
+ 180   1              u8 result;
+ 181   1              u8 parameter;
+ 182   1              
+ 183   1              if(MG200_DETECT)//手指按下之后再进行指纹比对
+ 184   1              {
+ 185   2                      while(CaptureAndExtract(0x00));//提取一次指纹特征量
+ 186   2                      //提取指纹特征量完成，开始发送比对指纹指令
+ 187   2                      Mg200_SendData(0x71,0x00);//发送数据包
+ 188   2                      if(Mg200_RecData(0x71,&result,&parameter) == 0)
+ 189   2                      {
+ 190   3                              //接收数据正常
+ 191   3                              switch(result)
+ 192   3                              {
+ 193   4                                      case 0x00:printf("比对指纹成功,ID号:%d\r\n",parameter);break;
+ 194   4                                      default:printf("比对失败\r\n");break;
+ 195   4                              }                       
+ 196   3                      }
+ 197   2                      else
+ 198   2                      {
+ 199   3                              printf("通信失败\r\n");
+ 200   3                              return 0;
+ 201   3                      }
+ 202   2              }
+ 203   1              return parameter;
+ 204   1              //返回值 非0 ：对比成功，且为ID号     0：比对失败
+ 205   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    526    ----
+   CONSTANT SIZE    =    228    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =      9      18
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

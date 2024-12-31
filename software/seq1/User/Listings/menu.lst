@@ -1,0 +1,218 @@
+C51 COMPILER V9.54   MENU                                                                  12/31/2024 21:12:03 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE MENU
+OBJECT MODULE PLACED IN .\Objects\menu.obj
+COMPILER INVOKED BY: E:\004-Programming\02-Embedded\Keil5\C51\BIN\C51.EXE ..\Dev\menu\menu.c COMPACT OPTIMIZE(8,SPEED) B
+                    -ROWSE MODP2 INCDIR(..\Dev;..\Sys;..\User;..\Dev\menu;..\Dev\mg200) DEBUG OBJECTEXTEND PRINT(.\Listings\menu.lst) OBJECT(
+                    -.\Objects\menu.obj)
+
+line level    source
+
+   1          #include "menu.h"
+   2          /*
+   3          ´úÂë¶ÔÓ¦µÄbÕ¾ÊÓÆµ
+   4          https://www.bilibili.com/video/BV1DT411V78v/
+   5          */
+   6          
+   7          /*==================================1.²Ëµ¥½çÃæ»æÖÆÓëÏÔÊ¾º¯ÊýÊµÏÖ=========================================*
+             -/ 
+   8          
+   9          char pdata str[20];
+  10          int selectItem_current,selectItem_hidden,selectItem;
+  11          
+  12          struct MenuItem* MenuPoint=MainMenu;//Á´±íÒýË÷Ö¸Ïòµ±Ç°²Ëµ¥
+  13          
+  14          char Setmenu0_str[3][10]=
+  15          {
+  16                  {"1.TestA"},
+  17                  {"2.TestB"},
+  18                  {"3.TestC"},
+  19          };
+  20          //µÚÒ»¼¶
+  21          #define MainMenunum 3
+  22          struct MenuItem idata MainMenu[MainMenunum] = { 
+  23          /*      µ±Ç°½çÃæ°üº¬²Ëµ¥µÄ×ÜÊýÄ¿ | µ±Ç°²Ëµ¥Ãû³Æ | Ñ¡Ôñ¸Ã²Ëµ¥ºóÖ´ÐÐµÄ¹¦ÄÜº¯Êý | µ±Ç°ÏîÄ¿µÄ×Ó²Ëµ¥ | µ±Ç°ÏîÄ¿µÄ¸¸²
+             -Ëµ¥*/
+  24          {                       MainMenunum,                                     "Menu1" ,                                                      NULL ,                                                          Setmenu0,                                       NULL }, 
+  25          {                       MainMenunum,                                     "Menu2" ,                                                      NULL ,                                                          NULL,                                           NULL },
+  26          {                       MainMenunum,                                     "Menu3" ,                                                      NULL ,                                                          NULL,                                           NULL },
+  27          };
+  28          
+  29          //µÚ¶þ¼¶
+  30          #define Setmenu0num 4
+  31          struct MenuItem idata Setmenu0[Setmenu0num]={
+  32          { Setmenu0num,Setmenu0_str[0],NULL,NULL,MainMenu },
+  33          { Setmenu0num,Setmenu0_str[1],NULL,NULL,MainMenu },
+  34          { Setmenu0num,Setmenu0_str[2],NULL,NULL,MainMenu },
+  35          { Setmenu0num,"BACK"   ,NULL,NULL,MainMenu },
+  36          };
+  37          
+  38          //ÏÔÊ¾º¯Êý
+  39          //xÎªºá×ø±êÏñËØµãÊý
+  40          //lineÎªÐÐÊý£¬Èç 0 1 2 3
+  41          void menu_show(int x,int line,char *strdata)
+  42          {
+  43   1          OLED_ShowString((u8)x, (u8)2*line, strdata, 16);
+  44   1      }
+  45          //ÇåÆÁº¯Êý
+  46          void menu_clear(void)
+  47          {
+  48   1          OLED_Clear();
+  49   1      }
+  50          //²Ëµ¥Ïà¹Ø±äÁ¿³õÊ¼»¯£¬²¢ÇÒÏÔÊ¾¸ùÄ¿Â¼ÄÚÈÝ
+  51          void menu_init(void)
+C51 COMPILER V9.54   MENU                                                                  12/31/2024 21:12:03 PAGE 2   
+
+  52          {
+  53   1              selectItem_current =1;
+  54   1              selectItem_hidden  =0;
+  55   1              selectItem=selectItem_current+selectItem_hidden;
+  56   1              menu_clear();
+  57   1              display(MenuPoint,selectItem_current,selectItem_hidden);
+  58   1      }
+  59          //²Ëµ¥ÏÔÊ¾º¯Êý
+  60          //
+  61          void display(struct MenuItem * MenuPoint,int selectItem_current,int selectItem_hidden)
+  62          {
+  63   1              int j;//forÑ­»·ÓÃµÄ
+  64   1              int x=24;//²Ëµ¥ÏÔÊ¾µÄÆðÊ¼X×ø±ê
+  65   1              int arrows_x=0;//¼ýÍ·µÄÆðÊ¼X×ø±ê
+  66   1              int line=0;//ÏÔÊ¾µÄÆðÊ¼ÐÐÊý
+  67   1              menu_show(arrows_x,selectItem_current-1,"->");
+  68   1              for ( j= selectItem_hidden; j < my_min(MenuPoint->MenuCount,linenumber+selectItem_hidden);j++)
+  69   1              {
+  70   2                      menu_show(x,line,MenuPoint[j].DisplayString);
+  71   2                      line+=1;
+  72   2              }
+  73   1          
+  74   1      }
+  75          //ºÍÉÏÃæµÄº¯ÊýÒ»Ñù£¬Òò±äÁ¿ÎªÈ«¾Ö±äÁ¿,¹Ê²ÎÊý¿ÉÊ¡È¥
+  76          void display1(void)
+  77          {
+  78   1              display(MenuPoint,selectItem_current,selectItem_hidden);
+  79   1      }
+  80          //10µÄN´Î·½º¯Êý
+  81          u32 my_pow10(int a)
+  82          {
+  83   1              u8 i;
+  84   1              u32 mydata=1;
+  85   1              for(i=0;i<a;i++)
+  86   1              mydata*=10;
+  87   1              return mydata;
+  88   1      }
+  89          //±È½ÏÁ½¸öÊý£¬·µ»ØÐ¡µÄÊý
+  90          int my_min(int a,int b)
+  91          {
+  92   1              if (a<b)return a;
+  93   1              return b;
+  94   1      }
+  95          
+  96          /*==================================2.²Ëµ¥½»»¥¹¦ÄÜ=========================================*/ 
+  97          void menu(u8 key_num)
+  98          {
+  99   1              switch(key_num)
+ 100   1              {
+ 101   2                      case WKUP_PRES:
+ 102   2                      {//ÉÏ
+ 103   3                              menu_clear();
+ 104   3                              selectItem_current--;
+ 105   3                              if (selectItem_current==0)
+ 106   3                              {
+ 107   4                                      if(selectItem_hidden>0)selectItem_hidden--;
+ 108   4                                      selectItem_current++;
+ 109   4                              }
+ 110   3                              selectItem=selectItem_current+selectItem_hidden;
+ 111   3                              display(MenuPoint,selectItem_current,selectItem_hidden);
+ 112   3                      };break;
+ 113   2                      case KEY1_PRES:
+C51 COMPILER V9.54   MENU                                                                  12/31/2024 21:12:03 PAGE 3   
+
+ 114   2                      {//ÏÂ
+ 115   3                              menu_clear();
+ 116   3                              selectItem_current++;
+ 117   3                              if (selectItem_current+selectItem_hidden == MenuPoint->MenuCount+1)//¼ÓÉÏ¿ÉÊµÏÖÍùÏÂÒÆ¶¯ÅÜµ½×îÉÏÃæÒ»ÐÐ
+ 118   3                              {
+ 119   4                                              selectItem_current =1;
+ 120   4                                              selectItem_hidden  =0;
+ 121   4                                              selectItem=selectItem_current+selectItem_hidden;
+ 122   4                                              display(MenuPoint,selectItem_current,selectItem_hidden);
+ 123   4                              }
+ 124   3                              if(selectItem_current>linenumber)//µ±Ç°µÄÐÐÊý³¬¹ý×ÜÐÐÊý
+ 125   3                              {
+ 126   4                                      if (selectItem_current+selectItem_hidden <= MenuPoint->MenuCount)
+ 127   4                                              selectItem_hidden++;
+ 128   4                                      selectItem_current--;
+ 129   4                              }
+ 130   3                              else if(selectItem_current>MenuPoint->MenuCount)selectItem_current--;
+ 131   3                              selectItem=selectItem_current+selectItem_hidden;
+ 132   3                              display(MenuPoint,selectItem_current,selectItem_hidden);
+ 133   3                      };break;
+ 134   2                      case KEY0_PRES:
+ 135   2                      {//ÓÒ È·ÈÏ½øÈë´ËÏîÄ¿
+ 136   3                              //¿É×Ô¶¯¼à²â×Ö·ûÎª"·µ»ØÉÏÒ»¼¶"¾ÍÖ´ÐÐÏàÓ¦µÄ¹¦ÄÜ
+ 137   3                              if((strcmp((char*)MenuPoint[selectItem-1].DisplayString,"BACK") == 0)&&MenuPoint!=MainMenu)//Âú×ãÍË»ØÉÏ
+             -Ò»¼¶Ìõ¼þ
+ 138   3                              //if(selectItem== 1&&MenuPoint!=MainMenu)//Âú×ãÍË»ØÉÏÒ»¼¶Ìõ¼þ
+ 139   3                              {
+ 140   4                                              menu_clear();
+ 141   4                                              MenuPoint = MenuPoint[selectItem - 1].ParentMenus;
+ 142   4                                              selectItem_current =1;
+ 143   4                                              selectItem_hidden  =0;
+ 144   4                                              selectItem=selectItem_current+selectItem_hidden;
+ 145   4                                              display(MenuPoint,selectItem_current,selectItem_hidden);
+ 146   4                              }
+ 147   3                              else if (MenuPoint[selectItem - 1].ChildrenMenus != NULL)//ÅÐ¶ÏÊÇ·ñÓÐÏÂÒ»¼¶
+ 148   3                              {                               
+ 149   4                                      menu_clear();
+ 150   4                                      MenuPoint = MenuPoint[selectItem - 1].ChildrenMenus;
+ 151   4                                      selectItem_current =1;
+ 152   4                                      selectItem_hidden  =0;
+ 153   4                                      selectItem=selectItem_current+selectItem_hidden;
+ 154   4                                      display(MenuPoint,selectItem_current,selectItem_hidden);
+ 155   4                              }
+ 156   3                              else if(MenuPoint[selectItem - 1].Subs != NULL)MenuPoint[selectItem - 1].Subs();//¹¦ÄÜº¯ÊýÖ´ÐÐ  
+ 157   3                      };break;
+ 158   2                      case KEY2_PRES:
+ 159   2                      {//×ó ·µ»ØÉÏÒ»¼¶
+ 160   3                              if(MenuPoint!=MainMenu)
+ 161   3                              {
+ 162   4                                      menu_clear();
+ 163   4                                      MenuPoint = MenuPoint[selectItem - 1].ParentMenus;
+ 164   4                                      selectItem_current =1;
+ 165   4                                      selectItem_hidden  =0;
+ 166   4                                      selectItem=selectItem_current+selectItem_hidden;
+ 167   4                                      display(MenuPoint,selectItem_current,selectItem_hidden);
+ 168   4                              }               
+ 169   3                      }
+ 170   2              }
+ 171   1      }
+ 172          
+ 173          /*==================================3.¹¦ÄÜº¯ÊýÊµÏÖ=========================================*/ 
+ 174          
+C51 COMPILER V9.54   MENU                                                                  12/31/2024 21:12:03 PAGE 4   
+
+ 175          
+ 176          
+ 177          
+ 178          
+ 179          
+ 180          
+ 181          
+ 182          
+ 183          
+ 184          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1145    ----
+   CONSTANT SIZE    =     26    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =     59      15
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =     98    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

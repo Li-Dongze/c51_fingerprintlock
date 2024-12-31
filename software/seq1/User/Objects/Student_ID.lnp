@@ -2,7 +2,11 @@
 ".\Objects\led.obj",
 ".\Objects\oled.obj",
 ".\Objects\i2c.obj",
+".\Objects\uart.obj",
+".\Objects\menu.obj",
 ".\Objects\timer1.obj",
 ".\Objects\main.obj" 
 TO ".\Objects\Student_ID" 
 PRINT(".\Listings\Student_ID.m51") RAMSIZE(256) 
+CODE( 0X0000-0X1FFF )
+XDATA( 0X0000-0X00FF )

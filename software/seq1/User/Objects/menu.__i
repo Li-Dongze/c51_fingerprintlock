@@ -1,0 +1,1 @@
+"..\Dev\menu\menu.c" COMPACT OPTIMIZE (8,SPEED) BROWSE MODP2 INCDIR(..\Dev;..\Sys;..\User;..\Dev\menu;..\Dev\mg200) DEBUG OBJECTEXTEND PRINT(.\Listings\menu.lst) OBJECT(.\Objects\menu.obj)
