@@ -24,20 +24,22 @@ Project File Date:  01/01/2025
 <h2>Output:</h2>
 Build target 'Student_ID'
 compiling main.c...
+main.c(141): warning C235: parameter 1: different types
+main.c(141): warning C235: parameter 2: different types
+main.c(153): warning C235: parameter 1: different types
+main.c(153): warning C235: parameter 2: different types
 linking...
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
     SEGMENT: ?PR?OLED_DISPLAY_ON?OLED
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
     SEGMENT: ?PR?OLED_DISPLAY_OFF?OLED
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_EEPROM_WRITE?I2C
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_EEPROM_READ?I2C
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
     SEGMENT: ?PR?_UART_SENDBYTE?UART
-Program Size: data=38.7 xdata=78 code=6463
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?LED_TASK?MAIN
+Program Size: data=33.7 xdata=56 code=6306
 creating hex file from ".\Objects\Student_ID"...
-".\Objects\Student_ID" - 0 Error(s), 5 Warning(s).
+".\Objects\Student_ID" - 0 Error(s), 8 Warning(s).
 Build Time Elapsed:  00:00:00
 </pre>
 </body>
