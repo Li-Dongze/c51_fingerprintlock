@@ -359,10 +359,10 @@ void Oled_Task(void)
         sprintf(str, "door open ");
         OLED_ShowString(0,6,str,8);
         
+        P0 = 0xef;
+        
         delay_ms(1000);
         door_flag = 0;
-        
-        P0 = 0xef;
     }
     else
     {
