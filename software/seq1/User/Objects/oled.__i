@@ -1,0 +1,1 @@
+"..\Dev\oled.c" COMPACT OPTIMIZE (8,SPEED) BROWSE MODP2 INCDIR(..\Dev;..\Sys;..\User;..\Dev\menu;..\Dev\mg200) DEBUG OBJECTEXTEND PRINT(.\Listings\oled.lst) OBJECT(.\Objects\oled.obj)

@@ -22,13 +22,13 @@ void UART_SendByte(uint8_t Byte)
     TI = 0;
 }
 
-void UART_SendString(uint8_t *str)
-{
-    while(*str != '\0')
-    {
-        UART_SendByte(*(str++));
-    }   
-}
+//void UART_SendString(uint8_t *str)
+//{
+//    while(*str != '\0')
+//    {
+//        UART_SendByte(*(str++));
+//    }   
+//}
 
 
 

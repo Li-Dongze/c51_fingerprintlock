@@ -1,17 +1,17 @@
 #include "key.h"
 
-uint8_t Key_Read_BTN(void)
-{
-	uint8_t Key_Value;
-	
-	if(P33 == 0)	Key_Value = 4;
-	else if(P32 == 0)	Key_Value = 5;
-	else if(P31 == 0)	Key_Value = 6;
-	else if(P30 == 0)	Key_Value = 7;
-	else Key_Value = 0;
-	
-	return Key_Value;
-}	
+//uint8_t Key_Read_BTN(void)
+//{
+//	uint8_t Key_Value;
+//	
+//	if(P33 == 0)	Key_Value = 4;
+//	else if(P32 == 0)	Key_Value = 5;
+//	else if(P31 == 0)	Key_Value = 6;
+//	else if(P30 == 0)	Key_Value = 7;
+//	else Key_Value = 0;
+//	
+//	return Key_Value;
+//}	
 
 uint8_t Key_Read(void)
 {

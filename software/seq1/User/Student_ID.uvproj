@@ -382,11 +382,6 @@
               <FilePath>..\Dev\key.c</FilePath>
             </File>
             <File>
-              <FileName>led.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Dev\led.c</FilePath>
-            </File>
-            <File>
               <FileName>oled.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Dev\oled.c</FilePath>
@@ -400,11 +395,6 @@
               <FileName>uart.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Dev\uart.c</FilePath>
-            </File>
-            <File>
-              <FileName>menu.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Dev\menu\menu.c</FilePath>
             </File>
           </Files>
         </Group>

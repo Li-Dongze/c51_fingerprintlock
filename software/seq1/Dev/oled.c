@@ -191,42 +191,42 @@ void OLED_ShowChar(u8 x,u8 y,u8 chr,u8 sizey)
 	{
 		if(i%sizex==0&&sizey!=8) OLED_Set_Pos(x,y++);
 		if(sizey==8) OLED_WR_Byte(asc2_0806[c][i],OLED_DATA);//6X8字号
-		else if(sizey==16) OLED_WR_Byte(asc2_1608[c][i],OLED_DATA);//8x16字号
+//		else if(sizey==16) OLED_WR_Byte(asc2_1608[c][i],OLED_DATA);//8x16字号
 //		else if(sizey==xx) OLED_WR_Byte(asc2_xxxx[c][i],OLED_DATA);//用户添加字号
 		else return;
 	}
 }
-//m^n函数
-u32 oled_pow(u8 m,u8 n)
-{
-	u32 result=1;	 
-	while(n--)result*=m;    
-	return result;
-}				  
-//显示数字
-//x,y :起点坐标
-//num:要显示的数字
-//len :数字的位数
-//sizey:字体大小		  
-void OLED_ShowNum(u8 x,u8 y,u32 num,u8 len,u8 sizey)
-{         	
-	u8 t,temp,m=0;
-	u8 enshow=0;
-	if(sizey==8)m=2;
-	for(t=0;t<len;t++)
-	{
-		temp=(num/oled_pow(10,len-t-1))%10;
-		if(enshow==0&&t<(len-1))
-		{
-			if(temp==0)
-			{
-				OLED_ShowChar(x+(sizey/2+m)*t,y,' ',sizey);
-				continue;
-			}else enshow=1;
-		}
-	 	OLED_ShowChar(x+(sizey/2+m)*t,y,temp+'0',sizey);
-	}
-}
+////m^n函数
+//u32 oled_pow(u8 m,u8 n)
+//{
+//	u32 result=1;	 
+//	while(n--)result*=m;    
+//	return result;
+//}				  
+////显示数字
+////x,y :起点坐标
+////num:要显示的数字
+////len :数字的位数
+////sizey:字体大小		  
+//void OLED_ShowNum(u8 x,u8 y,u32 num,u8 len,u8 sizey)
+//{         	
+//	u8 t,temp,m=0;
+//	u8 enshow=0;
+//	if(sizey==8)m=2;
+//	for(t=0;t<len;t++)
+//	{
+//		temp=(num/oled_pow(10,len-t-1))%10;
+//		if(enshow==0&&t<(len-1))
+//		{
+//			if(temp==0)
+//			{
+//				OLED_ShowChar(x+(sizey/2+m)*t,y,' ',sizey);
+//				continue;
+//			}else enshow=1;
+//		}
+//	 	OLED_ShowChar(x+(sizey/2+m)*t,y,temp+'0',sizey);
+//	}
+//}
 //显示一个字符号串
 void OLED_ShowString(u8 x,u8 y,u8 *chr,u8 sizey)
 {
@@ -238,38 +238,38 @@ void OLED_ShowString(u8 x,u8 y,u8 *chr,u8 sizey)
 		else x+=sizey/2;
 	}
 }
-//显示汉字
-void OLED_ShowChinese(u8 x,u8 y,u8 no,u8 sizey)
-{
-	u16 i,size1=(sizey/8+((sizey%8)?1:0))*sizey;
-	for(i=0;i<size1;i++)
-	{
-		if(i%sizey==0) OLED_Set_Pos(x,y++);
-		if(sizey==16) OLED_WR_Byte(Hzk[no][i],OLED_DATA);//16x16字号
-//		else if(sizey==xx) OLED_WR_Byte(xxx[c][i],OLED_DATA);//用户添加字号
-		else return;
-	}				
-}
+////显示汉字
+//void OLED_ShowChinese(u8 x,u8 y,u8 no,u8 sizey)
+//{
+//	u16 i,size1=(sizey/8+((sizey%8)?1:0))*sizey;
+//	for(i=0;i<size1;i++)
+//	{
+//		if(i%sizey==0) OLED_Set_Pos(x,y++);
+//		if(sizey==16) OLED_WR_Byte(Hzk[no][i],OLED_DATA);//16x16字号
+////		else if(sizey==xx) OLED_WR_Byte(xxx[c][i],OLED_DATA);//用户添加字号
+//		else return;
+//	}				
+//}
 
 
-//显示图片
-//x,y显示坐标
-//sizex,sizey,图片长宽
-//BMP：要显示的图片
-void OLED_DrawBMP(u8 x,u8 y,u8 sizex, u8 sizey,u8 BMP[])
-{ 	
-  u16 j=0;
-	u8 i,m;
-	sizey=sizey/8+((sizey%8)?1:0);
-	for(i=0;i<sizey;i++)
-	{
-		OLED_Set_Pos(x,i+y);
-    for(m=0;m<sizex;m++)
-		{      
-			OLED_WR_Byte(BMP[j++],OLED_DATA);	    	
-		}
-	}
-} 
+////显示图片
+////x,y显示坐标
+////sizex,sizey,图片长宽
+////BMP：要显示的图片
+//void OLED_DrawBMP(u8 x,u8 y,u8 sizex, u8 sizey,u8 BMP[])
+//{ 	
+//  u16 j=0;
+//	u8 i,m;
+//	sizey=sizey/8+((sizey%8)?1:0);
+//	for(i=0;i<sizey;i++)
+//	{
+//		OLED_Set_Pos(x,i+y);
+//    for(m=0;m<sizex;m++)
+//		{      
+//			OLED_WR_Byte(BMP[j++],OLED_DATA);	    	
+//		}
+//	}
+//} 
 
 
 

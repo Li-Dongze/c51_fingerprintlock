@@ -1,4 +1,4 @@
-C51 COMPILER V9.54   MENU                                                                  12/31/2024 21:12:03 PAGE 1   
+C51 COMPILER V9.54   MENU                                                                  12/31/2024 23:35:11 PAGE 1   
 
 
 C51 COMPILER V9.54, COMPILATION OF MODULE MENU
@@ -62,7 +62,7 @@ line level    source
   49   1      }
   50          //菜单相关变量初始化，并且显示根目录内容
   51          void menu_init(void)
-C51 COMPILER V9.54   MENU                                                                  12/31/2024 21:12:03 PAGE 2   
+C51 COMPILER V9.54   MENU                                                                  12/31/2024 23:35:11 PAGE 2   
 
   52          {
   53   1              selectItem_current =1;
@@ -126,7 +126,7 @@ line level    source
  111   3                              display(MenuPoint,selectItem_current,selectItem_hidden);
  112   3                      };break;
  113   2                      case KEY1_PRES:
-C51 COMPILER V9.54   MENU                                                                  12/31/2024 21:12:03 PAGE 3   
+C51 COMPILER V9.54   MENU                                                                  12/31/2024 23:35:11 PAGE 3   
 
  114   2                      {//下
  115   3                              menu_clear();
@@ -190,7 +190,7 @@ line level    source
  172          
  173          /*==================================3.功能函数实现=========================================*/ 
  174          
-C51 COMPILER V9.54   MENU                                                                  12/31/2024 21:12:03 PAGE 4   
+C51 COMPILER V9.54   MENU                                                                  12/31/2024 23:35:11 PAGE 4   
 
  175          
  176          

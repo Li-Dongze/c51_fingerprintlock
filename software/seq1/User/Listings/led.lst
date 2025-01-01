@@ -1,4 +1,4 @@
-C51 COMPILER V9.54   LED                                                                   12/31/2024 21:11:35 PAGE 1   
+C51 COMPILER V9.54   LED                                                                   01/01/2025 01:10:04 PAGE 1   
 
 
 C51 COMPILER V9.54, COMPILATION OF MODULE LED
@@ -11,10 +11,10 @@ line level    source
 
    1          #include "led.h"
    2          
-   3          void Led_Control(uint8_t ucled)
-   4          {
-   5   1              P0 = ucled;
-   6   1      }
+   3          //void Led_Control(uint8_t ucled)
+   4          //{
+   5          //      P0 = ucled;
+   6          //}
    7          
    8          
    9          
@@ -45,7 +45,7 @@ line level    source
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =      3    ----
+   CODE SIZE        =   ----    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----

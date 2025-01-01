@@ -1,4 +1,4 @@
-C51 COMPILER V9.54   MAIN                                                                  12/31/2024 21:11:35 PAGE 1   
+C51 COMPILER V9.54   MAIN                                                                  01/01/2025 15:56:34 PAGE 1   
 
 
 C51 COMPILER V9.54, COMPILATION OF MODULE MAIN
@@ -24,202 +24,469 @@ line level    source
   13          void key_Task(void);
   14          void Oled_Task(void);
   15          
-  16          /*****************************************外设全局变量***********************************************/
-  17          
-  18          //led专用变量
-  19          uint8_t ucled;
-  20          
-  21          //按键专用变量
-  22          uint8_t Key_Value;
-  23          uint8_t Key_Down;
-  24          uint8_t Key_Old;
-  25          
-  26          //任务调度专用变量
-  27          uint16_t pdata TaskTimer[TASKNUM_MAX];
-  28          TaskStruct pdata Task[] = {
-  29              {Led_Task, 100},
-  30                  {key_Task, 10},
-  31                  {Oled_Task, 1000}
-  32          };
-  33          /*****************************************用户全局变量***********************************************/
-  34          //char str[10];
-  35          //uint8_t eepromBuf[10];
-  36          //int count = 0;
-  37          
-  38          uint8_t menuKey_flag;
-  39          
-  40          /****************************************************************************************************/
-  41          
-  42          
-  43          /*------------------------------------------主函数--------------------------------------------------*/
-  44          int main(void)
-  45          {
-  46   1              Task_Init();
-  47   1          
-  48   1          //delay_ms(1000);
-  49   1          
-  50   1              OLED_Init();//初始化OLED
-  51   1              OLED_ColorTurn(0);//0正常显示，1 反色显示
-  52   1          OLED_DisplayTurn(0);//0正常显示 1 屏幕翻转显示
-  53   1          
-C51 COMPILER V9.54   MAIN                                                                  12/31/2024 21:11:35 PAGE 2   
+  16          //其他函数
+  17          void oledshow_MainPage(void);
+  18          void oledshow_MasterPage(void);
+  19          bit str_judge(int *str1, int *str2);
+  20          void str_copy(int *str1, int *str2);
+  21          
+  22          /*****************************************外设全局变量***********************************************/
+  23          
+  24          //led专用变量
+  25          uint8_t ucled;
+  26          
+  27          //按键专用变量
+  28          uint8_t Key_Value;
+  29          uint8_t Key_Down;
+  30          uint8_t Key_Old;
+  31          
+  32          //任务调度专用变量
+  33          uint16_t data TaskTimer[TASKNUM_MAX];
+  34          TaskStruct data Task[] = {
+  35              {Led_Task, 100},
+  36                  {key_Task, 10},
+  37                  {Oled_Task, 1000}
+  38          };
+  39          /*****************************************用户全局变量***********************************************/
+  40          char str[20];
+  41          //uint8_t eepromBuf[10];
+  42          int count = 0;
+  43          volatile int password[4] = {0, 0, 0, 0};
+  44          volatile int user_password[4] = {1, 2, 3, 4};
+  45          volatile int master_password[4] = {4, 3, 2, 1};
+  46          
+  47          uint8_t index = 0;
+  48          bit door_flag = 0;
+  49          bit Mode = 0;
+  50          bit master_enter_flag = 0;
+  51          bit change_flag = 0;
+  52          bit page_flag = 0;
+  53          bit main_enter_flag = 0;
+C51 COMPILER V9.54   MAIN                                                                  01/01/2025 15:56:34 PAGE 2   
 
-  54   1          menu_init();
-  55   1          
-  56   1          //EEPROM_Write("hello", 0, 5);
-  57   1          
-  58   1              Timer0_Init();
-  59   1          Uart1_Init();
-  60   1              EA = 1;
-  61   1          
-  62   1          //sprintf(str, "hello\n");
-  63   1          UART_SendString("hello");
-  64   1              
-  65   1              while(1)
-  66   1              {
-  67   2                      TaskRun();
-  68   2              }
-  69   1      }
-  70          
-  71          /*-----------------------------------------中断服务函数--------------------------------------------------*
+  54          
+  55          //uint8_t menuKey_flag;
+  56          
+  57          /****************************************************************************************************/
+  58          
+  59          
+  60          /*------------------------------------------主函数--------------------------------------------------*/
+  61          int main(void)
+  62          {
+  63   1              Task_Init();
+  64   1          
+  65   1          //delay_ms(1000);
+  66   1          
+  67   1              OLED_Init();//初始化OLED
+  68   1              OLED_ColorTurn(0);//0正常显示，1 反色显示
+  69   1          OLED_DisplayTurn(0);//0正常显示 1 屏幕翻转显示
+  70   1          
+  71   1          oledshow_MainPage();
+  72   1          
+  73   1          //menu_init();
+  74   1          
+  75   1          //EEPROM_Write("hello", 0, 5);
+  76   1          
+  77   1              Timer0_Init();
+  78   1          Uart1_Init();
+  79   1              EA = 1;
+  80   1          
+  81   1          //sprintf(str, "hello\n");
+  82   1          //UART_SendString("hello");
+  83   1              
+  84   1              while(1)
+  85   1              {
+  86   2                      TaskRun();
+  87   2              }
+  88   1      }
+  89          
+  90          void oledshow_MainPage(void)
+  91          {
+  92   1          sprintf(str, "Mode: user");
+  93   1          OLED_ShowString(0,0,str,8);
+  94   1          
+  95   1          sprintf(str, "enter your PIN:");
+  96   1          OLED_ShowString(0,2,str,8);
+  97   1          
+  98   1          // 清零输入密码
+  99   1          password[0] = 0;
+ 100   1          password[1] = 0;
+ 101   1          password[2] = 0;
+ 102   1          password[3] = 0;
+ 103   1          
+ 104   1          sprintf(str, "     %d  %d  %d  %d", password[0], password[1], password[2], password[3]);
+ 105   1          OLED_ShowString(0,4,str,8);
+ 106   1          
+ 107   1          sprintf(str, "door close");
+ 108   1          OLED_ShowString(0,6,str,8);
+ 109   1      }
+ 110          
+ 111          void oledshow_MasterPage(void)
+ 112          {
+ 113   1          sprintf(str, "change: user");
+ 114   1          OLED_ShowString(0,0,str,8);
+ 115   1          
+C51 COMPILER V9.54   MAIN                                                                  01/01/2025 15:56:34 PAGE 3   
+
+ 116   1          sprintf(str, "change your PIN:");
+ 117   1          OLED_ShowString(0,2,str,8);
+ 118   1          
+ 119   1          // 清零输入密码
+ 120   1          password[0] = 0;
+ 121   1          password[1] = 0;
+ 122   1          password[2] = 0;
+ 123   1          password[3] = 0;
+ 124   1          
+ 125   1          sprintf(str, "     %d  %d  %d  %d", password[0], password[1], password[2], password[3]);
+ 126   1          OLED_ShowString(0,4,str,8);
+ 127   1      }
+ 128          
+ 129          bit str_judge(int *str1, int *str2)
+ 130          {
+ 131   1          uint8_t i;
+ 132   1          
+ 133   1          for(i = 0; i < 4; i++)
+ 134   1          {
+ 135   2              if(str1[i] != str2[i])
+ 136   2                  return 0;
+ 137   2          }
+ 138   1          return 1;
+ 139   1      }
+ 140          
+ 141          void str_copy(int *str1, int *str2)
+ 142          {
+ 143   1          uint8_t i;
+ 144   1          
+ 145   1          for(i = 0; i < 4; i++)
+ 146   1          {
+ 147   2              str1[i] = str2[i];
+ 148   2          }
+ 149   1      }
+ 150          
+ 151          /*-----------------------------------------中断服务函数--------------------------------------------------*
              -/
-  72          void Timer0_Rountine(void)      interrupt 1
-  73          {
-  74   1              uint8_t i;
-  75   1          
-  76   1          // 手动重装
-  77   1          TL0 = 0x66;                         //设置定时初始值
-  78   1              TH0 = 0xFC;                             //设置定时初始值
-  79   1          
-  80   1              //任务定时器递减
-  81   1              for(i = 0; i < TASKNUM_MAX; i++)
-  82   1                      if(TaskTimer[i])
-  83   1                              TaskTimer[i]--;
-  84   1      }
-  85          
-  86          void Uart1_Isr(void) interrupt 4
-  87          {
-  88   1              if (RI)                         //检测串口1接收中断
-  89   1              {
-  90   2              
-  91   2                      RI = 0;                 //清除串口1接收中断请求位
-  92   2              }
-  93   1          
-  94   1      //    if (TI)                           //检测串口1发送中断
-  95   1      //    {
-  96   1      //        
-  97   1      //        TI = 0;
-  98   1      //    }
-  99   1      }
- 100          
- 101          /*-----------------------------------------具体任务--------------------------------------------------*/
- 102          void Led_Task(void)
- 103          {
- 104   1          //P0 ^= 0x01;
- 105   1      }       
- 106          
- 107          void key_Task(void)
- 108          {
- 109   1              //三行代码
- 110   1              Key_Value = Key_Read();
- 111   1              Key_Down = Key_Value&(Key_Value^Key_Old);
- 112   1              Key_Old = Key_Value;
- 113   1              
- 114   1              switch(Key_Down)
-C51 COMPILER V9.54   MAIN                                                                  12/31/2024 21:11:35 PAGE 3   
-
- 115   1              {
- 116   2                      case 13:
- 117   2                  //P04 = ~P04;
- 118   2                  menuKey_flag = 13;
- 119   2              break;
- 120   2              
- 121   2              case 14:
- 122   2                  //P05 = ~P05;
- 123   2                  menuKey_flag = 14;
- 124   2              break;
- 125   2              
- 126   2              case 15:
- 127   2                  //P06 = ~P06;
- 128   2                  menuKey_flag = 15; 
- 129   2              break;
- 130   2              
- 131   2              case 16:
- 132   2                  //P07 = ~P07;                       
- 133   2                  menuKey_flag = 16;
- 134   2                      break;
- 135   2              
- 136   2              default:
- 137   2              break;
- 138   2              }
- 139   1      
- 140   1          //menu(Key_Down);
- 141   1      }
- 142          
- 143          void Oled_Task(void)
- 144          {
- 145   1      //    // oled测试
- 146   1      //    sprintf(str, "count = %d", count++);
- 147   1      //    OLED_ShowString(0,0,str,16);
- 148   1      //    
- 149   1      //    // eeprom测试
- 150   1      //    EEPROM_Read(eepromBuf, 0, 5);
- 151   1      //    OLED_ShowString(0,2,(char *)eepromBuf,16);
- 152   1             
- 153   1              menu(menuKey_flag);
- 154   1              menuKey_flag = 0;
+ 152          void Timer0_Rountine(void)      interrupt 1
+ 153          {
+ 154   1              uint8_t i;
  155   1          
- 156   1      }
- 157          
- 158          /*-----------------------------------------任务调度--------------------------------------------------*/
- 159          void Task_Init(void)
- 160          {
- 161   1              uint8_t NTask;
- 162   1              for(NTask = 0; NTask < sizeof(Task)/sizeof(Task[0]); NTask++)
- 163   1              {
- 164   2                      TaskTimer[NTask] = Task[NTask].TaskPeriod;
- 165   2              }
- 166   1      }
- 167          
- 168          void TaskRun(void)
- 169          {
- 170   1              uint8_t NTask;
- 171   1              for(NTask = 0; NTask < sizeof(Task)/sizeof(Task[0]); NTask++)
- 172   1              {
- 173   2                      if(TaskTimer[NTask] == 0)
- 174   2                      {
- 175   3                              TaskTimer[NTask] = Task[NTask].TaskPeriod;
- 176   3                              (Task[NTask].pTask)();
-C51 COMPILER V9.54   MAIN                                                                  12/31/2024 21:11:35 PAGE 4   
+ 156   1          // 手动重装
+ 157   1          TL0 = 0x66;                         //设置定时初始值
+ 158   1              TH0 = 0xFC;                             //设置定时初始值
+ 159   1          
+ 160   1              //任务定时器递减
+ 161   1              for(i = 0; i < TASKNUM_MAX; i++)
+ 162   1                      if(TaskTimer[i])
+ 163   1                              TaskTimer[i]--;
+ 164   1      }
+ 165          
+ 166          void Uart1_Isr(void) interrupt 4
+ 167          {
+ 168   1              if (RI)                         //检测串口1接收中断
+ 169   1              {
+ 170   2              
+ 171   2                      RI = 0;                 //清除串口1接收中断请求位
+ 172   2              }
+ 173   1          
+ 174   1      //    if (TI)                           //检测串口1发送中断
+ 175   1      //    {
+ 176   1      //        
+C51 COMPILER V9.54   MAIN                                                                  01/01/2025 15:56:34 PAGE 4   
 
- 177   3                      }
- 178   2              }
+ 177   1      //        TI = 0;
+ 178   1      //    }
  179   1      }
  180          
- 181          
- 182          
- 183          
- 184          
- 185          
+ 181          /*-----------------------------------------具体任务--------------------------------------------------*/
+ 182          void Led_Task(void)
+ 183          {
+ 184   1          //P0 ^= 0x01;
+ 185   1      }       
  186          
- 187          
- 188          
- 189          
- 190          
- 191          
- 192          
- 193          
- 194          
+ 187          void key_Task(void)
+ 188          {
+ 189   1              // 三行代码数字滤波
+ 190   1              Key_Value = Key_Read();
+ 191   1              Key_Down = Key_Value&(Key_Value^Key_Old);
+ 192   1              Key_Old = Key_Value;
+ 193   1              
+ 194   1          // 切换用户/管理员模式
+ 195   1          if(Key_Down == 13)
+ 196   1          {
+ 197   2              Mode ^= 1;
+ 198   2          }
+ 199   1          
+ 200   1          // 选择修改用户/管理员密码
+ 201   1          if(Key_Down == 14)
+ 202   1          {
+ 203   2              change_flag ^= 1;
+ 204   2          }
+ 205   1              
+ 206   1          
+ 207   1              switch(Key_Down)
+ 208   1              {
+ 209   2                      case 10:
+ 210   2                  password[index++] = 0;
+ 211   2                  sprintf(str, "     %d  %d  %d  %d", password[0], password[1], password[2], password[3]);
+ 212   2                  OLED_ShowString(0,4,str,8);
+ 213   2              break;
+ 214   2              
+ 215   2              case 1:
+ 216   2                  password[index++] = 1;
+ 217   2                  sprintf(str, "     %d  %d  %d  %d", password[0], password[1], password[2], password[3]);
+ 218   2                  OLED_ShowString(0,4,str,8);
+ 219   2              break;
+ 220   2              
+ 221   2              case 2:
+ 222   2                  password[index++] = 2;
+ 223   2                  sprintf(str, "     %d  %d  %d  %d", password[0], password[1], password[2], password[3]);
+ 224   2                  OLED_ShowString(0,4,str,8);
+ 225   2              break;
+ 226   2              
+ 227   2              case 3:
+ 228   2                  password[index++] = 3;
+ 229   2                  sprintf(str, "     %d  %d  %d  %d", password[0], password[1], password[2], password[3]);
+ 230   2                  OLED_ShowString(0,4,str,8);
+ 231   2                      break;
+ 232   2              
+ 233   2              case 4:
+ 234   2                  password[index++] = 4;
+ 235   2                  sprintf(str, "     %d  %d  %d  %d", password[0], password[1], password[2], password[3]);
+ 236   2                  OLED_ShowString(0,4,str,8);
+ 237   2                      break;
+ 238   2              
+C51 COMPILER V9.54   MAIN                                                                  01/01/2025 15:56:34 PAGE 5   
+
+ 239   2              case 5:
+ 240   2                  password[index++] = 5;
+ 241   2                  sprintf(str, "     %d  %d  %d  %d", password[0], password[1], password[2], password[3]);
+ 242   2                  OLED_ShowString(0,4,str,8);
+ 243   2                      break;
+ 244   2              
+ 245   2              case 6:
+ 246   2                  password[index++] = 6;
+ 247   2                  sprintf(str, "     %d  %d  %d  %d", password[0], password[1], password[2], password[3]);
+ 248   2                  OLED_ShowString(0,4,str,8);
+ 249   2                      break;
+ 250   2              
+ 251   2              case 7:
+ 252   2                  password[index++] = 7;
+ 253   2                  sprintf(str, "     %d  %d  %d  %d", password[0], password[1], password[2], password[3]);
+ 254   2                  OLED_ShowString(0,4,str,8);
+ 255   2                      break;
+ 256   2              
+ 257   2              case 8:
+ 258   2                  password[index++] = 8;
+ 259   2                  sprintf(str, "     %d  %d  %d  %d", password[0], password[1], password[2], password[3]);
+ 260   2                  OLED_ShowString(0,4,str,8);
+ 261   2                      break;
+ 262   2              
+ 263   2              case 9:
+ 264   2                  password[index++] = 9;
+ 265   2                  sprintf(str, "     %d  %d  %d  %d", password[0], password[1], password[2], password[3]);
+ 266   2                  OLED_ShowString(0,4,str,8);
+ 267   2                      break;
+ 268   2              
+ 269   2              default:
+ 270   2              break;
+ 271   2              }
+ 272   1          
+ 273   1          // 输入完毕，判断密码是否正确
+ 274   1          if(index > 3)
+ 275   1          {
+ 276   2              // 主界面
+ 277   2              if(page_flag == 0)
+ 278   2              {
+ 279   3                  // 用户模式下
+ 280   3                  if(Mode == 0)
+ 281   3                  {
+ 282   4                      door_flag = str_judge(password, user_password);
+ 283   4                  }
+ 284   3                  // 管理员模式下
+ 285   3                  else
+ 286   3                  {
+ 287   4                      master_enter_flag = str_judge(password, master_password);
+ 288   4                      // 如果管理员密码输入错误，退回用户模式
+ 289   4                      if(master_enter_flag == 0)
+ 290   4                      {
+ 291   5                          Mode = 0;
+ 292   5                          P0 = 0xfe;
+ 293   5                      }
+ 294   4                          
+ 295   4                  }
+ 296   3              }
+ 297   2              // 管理员界面
+ 298   2              else
+ 299   2              {
+ 300   3                  // 更改用户密码
+C51 COMPILER V9.54   MAIN                                                                  01/01/2025 15:56:34 PAGE 6   
+
+ 301   3                  if(change_flag == 0)
+ 302   3                  {
+ 303   4                      str_copy(user_password, password);
+ 304   4                  }
+ 305   3                  // 更改管理员密码
+ 306   3                  else
+ 307   3                  {
+ 308   4                      str_copy(master_password, password);
+ 309   4                  }
+ 310   3                  
+ 311   3                  main_enter_flag = 1;
+ 312   3              }
+ 313   2              
+ 314   2              
+ 315   2              
+ 316   2              index = 0;
+ 317   2          }
+ 318   1             
+ 319   1      }
+ 320          
+ 321          void Oled_Task(void)
+ 322          {
+ 323   1          // 调试代码
+ 324   1          sprintf(str, "%d%d%d%d-%d%d%d%d", user_password[0], user_password[1], user_password[2], user_password[
+             -3],
+ 325   1                                            master_password[0], master_password[1], master_password[2], master_p
+             -assword[3]);
+ 326   1          OLED_ShowString(0,7,str,8);
+ 327   1          
+ 328   1          // 是否开门
+ 329   1          if(door_flag)
+ 330   1          {
+ 331   2              sprintf(str, "door open ");
+ 332   2              OLED_ShowString(0,6,str,8);
+ 333   2              
+ 334   2              P0 = 0xef;
+ 335   2          }
+ 336   1          else
+ 337   1          {
+ 338   2              P0 = 0xff;
+ 339   2          }
+ 340   1          
+ 341   1          // 主界面
+ 342   1          if(page_flag == 0)
+ 343   1          {
+ 344   2              // 用户模式
+ 345   2              if(Mode == 0)
+ 346   2              {
+ 347   3                  sprintf(str, "Mode: user  ");
+ 348   3                  OLED_ShowString(0,0,str,8);
+ 349   3              }
+ 350   2              // 管理员模式
+ 351   2              else
+ 352   2              {
+ 353   3                  sprintf(str, "Mode: master");
+ 354   3                  OLED_ShowString(0,0,str,8);
+ 355   3                  
+ 356   3                  // 成功进入管理员界面
+ 357   3                  if(master_enter_flag)
+ 358   3                  {
+ 359   4                      OLED_Clear();
+ 360   4                      oledshow_MasterPage();
+C51 COMPILER V9.54   MAIN                                                                  01/01/2025 15:56:34 PAGE 7   
+
+ 361   4                      
+ 362   4                      door_flag = 0;
+ 363   4                      Mode = 0;
+ 364   4                      master_enter_flag = 0;
+ 365   4                      change_flag = 0;
+ 366   4                      page_flag = 1;
+ 367   4                      main_enter_flag = 0;
+ 368   4                  }
+ 369   3              }
+ 370   2          }
+ 371   1          // 管理员界面
+ 372   1          else
+ 373   1          {
+ 374   2              // 更改用户密码
+ 375   2              if(change_flag == 0)
+ 376   2              {
+ 377   3                  sprintf(str, "change: user  ");
+ 378   3                  OLED_ShowString(0,0,str,8);
+ 379   3              }
+ 380   2              // 更改管理员密码
+ 381   2              else
+ 382   2              {
+ 383   3                  sprintf(str, "change: master");
+ 384   3                  OLED_ShowString(0,0,str,8);
+ 385   3              }
+ 386   2              
+ 387   2              // 成功返回主界面
+ 388   2              if(main_enter_flag)
+ 389   2              {
+ 390   3                  OLED_Clear();
+ 391   3                  oledshow_MainPage();
+ 392   3                  
+ 393   3                  // 退回主界面用户模式
+ 394   3                  door_flag = 0;
+ 395   3                  Mode = 0;
+ 396   3                  master_enter_flag = 0;
+ 397   3                  change_flag = 0;
+ 398   3                  page_flag = 0;
+ 399   3                  main_enter_flag = 0;
+ 400   3              }
+ 401   2          }
+ 402   1          
+ 403   1          
+ 404   1          
+ 405   1      //    
+ 406   1      //    // eeprom测试
+ 407   1      //    EEPROM_Read(eepromBuf, 0, 5);
+ 408   1      //    OLED_ShowString(0,2,(char *)eepromBuf,16);
+ 409   1             
+ 410   1      //        menu(menuKey_flag);
+ 411   1      //        menuKey_flag = 0;
+ 412   1          
+ 413   1      }
+ 414          
+ 415          /*-----------------------------------------任务调度--------------------------------------------------*/
+ 416          void Task_Init(void)
+ 417          {
+ 418   1              uint8_t NTask;
+ 419   1              for(NTask = 0; NTask < sizeof(Task)/sizeof(Task[0]); NTask++)
+ 420   1              {
+ 421   2                      TaskTimer[NTask] = Task[NTask].TaskPeriod;
+ 422   2              }
+C51 COMPILER V9.54   MAIN                                                                  01/01/2025 15:56:34 PAGE 8   
+
+ 423   1      }
+ 424          
+ 425          void TaskRun(void)
+ 426          {
+ 427   1              uint8_t NTask;
+ 428   1              for(NTask = 0; NTask < sizeof(Task)/sizeof(Task[0]); NTask++)
+ 429   1              {
+ 430   2                      if(TaskTimer[NTask] == 0)
+ 431   2                      {
+ 432   3                              TaskTimer[NTask] = Task[NTask].TaskPeriod;
+ 433   3                              (Task[NTask].pTask)();
+ 434   3                      }
+ 435   2              }
+ 436   1      }
+ 437          
+ 438          
+ 439          
+ 440          
+ 441          
+ 442          
+ 443          
+ 444          
+ 445          
+ 446          
+ 447          
+ 448          
+ 449          
+ 450          
+ 451          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    295    ----
-   CONSTANT SIZE    =   1030    ----
+   CODE SIZE        =   1661    ----
+   CONSTANT SIZE    =   1197    ----
    XDATA SIZE       =   ----    ----
-   PDATA SIZE       =     28       1
-   DATA SIZE        =   ----    ----
+   PDATA SIZE       =     51      14
+   DATA SIZE        =     23    ----
    IDATA SIZE       =   ----    ----
-   BIT SIZE         =   ----    ----
+   BIT SIZE         =      6    ----
 END OF MODULE INFORMATION.
 
 

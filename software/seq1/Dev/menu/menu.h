@@ -28,13 +28,15 @@ void menu(u8 key_num);
 // 功能函数
 
 
+
+
 // 用户需修改显示函数
 void menu_show(int x,int line,char *strdata);//显示函数
 void menu_clear(void);	//清屏函数
 
 /*========================================返回变量==========================================*/
 
-extern char pdata str[20];
+//extern char pdata str[20];
 extern int selectItem_current,selectItem_hidden,selectItem;
 extern struct MenuItem idata MainMenu[];
 extern struct MenuItem idata Setmenu0[];
