@@ -1,4 +1,4 @@
-C51 COMPILER V9.54   MAIN                                                                  01/01/2025 18:00:33 PAGE 1   
+C51 COMPILER V9.54   MAIN                                                                  01/01/2025 18:22:17 PAGE 1   
 
 
 C51 COMPILER V9.54, COMPILATION OF MODULE MAIN
@@ -62,7 +62,7 @@ line level    source
   51          bit master_enter_flag = 0;
   52          bit change_flag = 0;
   53          bit page_flag = 0;
-C51 COMPILER V9.54   MAIN                                                                  01/01/2025 18:00:33 PAGE 2   
+C51 COMPILER V9.54   MAIN                                                                  01/01/2025 18:22:17 PAGE 2   
 
   54          bit main_enter_flag = 0;
   55          
@@ -126,7 +126,7 @@ line level    source
  113   1          OLED_ShowString(0,6,str,8);
  114   1          
  115   1      }
-C51 COMPILER V9.54   MAIN                                                                  01/01/2025 18:00:33 PAGE 3   
+C51 COMPILER V9.54   MAIN                                                                  01/01/2025 18:22:17 PAGE 3   
 
  116          
  117          void oledshow_MasterPage(void)
@@ -190,7 +190,7 @@ line level    source
  170   1          
  171   1              //任务定时器递减
  172   1              for(i = 0; i < TASKNUM_MAX; i++)
-C51 COMPILER V9.54   MAIN                                                                  01/01/2025 18:00:33 PAGE 4   
+C51 COMPILER V9.54   MAIN                                                                  01/01/2025 18:22:17 PAGE 4   
 
  173   1                      if(TaskTimer[i])
  174   1                              TaskTimer[i]--;
@@ -254,7 +254,7 @@ line level    source
  232   2              case 2:
  233   2                  password[index++] = '2';
  234   2                  sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
-C51 COMPILER V9.54   MAIN                                                                  01/01/2025 18:00:33 PAGE 5   
+C51 COMPILER V9.54   MAIN                                                                  01/01/2025 18:22:17 PAGE 5   
 
  235   2                  OLED_ShowString(0,4,str,8);
  236   2              break;
@@ -318,7 +318,7 @@ line level    source
  294   4                      // 清空输入密码
  295   4                      password_clear();
  296   4                      sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
-C51 COMPILER V9.54   MAIN                                                                  01/01/2025 18:00:33 PAGE 6   
+C51 COMPILER V9.54   MAIN                                                                  01/01/2025 18:22:17 PAGE 6   
 
  297   4                      OLED_ShowString(0,4,str,8);
  298   4                      
@@ -361,7 +361,7 @@ line level    source
  335   4                      sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
  336   4                      OLED_ShowString(0,4,str,8);
  337   4                  }
- 338   3                  
+ 338   3                  main_enter_flag = 1;
  339   3              }
  340   2              
  341   2              
@@ -378,11 +378,11 @@ line level    source
              -3],
  352   1                                            master_password[0], master_password[1], master_password[2], master_p
              -assword[3]);
- 353   1          OLED_ShowString(0,7,str,8);
+ 353   1          OLED_ShowString(70,7,str,8);
  354   1         
  355   1          
  356   1          // 是否开门
-C51 COMPILER V9.54   MAIN                                                                  01/01/2025 18:00:33 PAGE 7   
+C51 COMPILER V9.54   MAIN                                                                  01/01/2025 18:22:17 PAGE 7   
 
  357   1          if(door_flag)
  358   1          {
@@ -446,7 +446,7 @@ line level    source
  416   2              {
  417   3                  sprintf(str, "change: master");
  418   3                  OLED_ShowString(0,0,str,8);
-C51 COMPILER V9.54   MAIN                                                                  01/01/2025 18:00:33 PAGE 8   
+C51 COMPILER V9.54   MAIN                                                                  01/01/2025 18:22:17 PAGE 8   
 
  419   3              }
  420   2              
@@ -509,8 +509,8 @@ line level    source
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   1588    ----
-C51 COMPILER V9.54   MAIN                                                                  01/01/2025 18:00:33 PAGE 9   
+   CODE SIZE        =   1658    ----
+C51 COMPILER V9.54   MAIN                                                                  01/01/2025 18:22:17 PAGE 9   
 
    CONSTANT SIZE    =   1197    ----
    XDATA SIZE       =   ----    ----

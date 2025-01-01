@@ -335,7 +335,7 @@ void key_Task(void)
                 sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
                 OLED_ShowString(0,4,str,8);
             }
-            
+            main_enter_flag = 1;
         }
         
         
@@ -350,7 +350,7 @@ void Oled_Task(void)
     // 调试代码
     sprintf(str, "%c%c%c%c-%c%c%c%c", user_password[0], user_password[1], user_password[2], user_password[3],
                                       master_password[0], master_password[1], master_password[2], master_password[3]);
-    OLED_ShowString(0,7,str,8);
+    OLED_ShowString(70,7,str,8);
    
     
     // 是否开门
