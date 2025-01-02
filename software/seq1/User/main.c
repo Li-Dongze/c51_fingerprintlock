@@ -97,10 +97,10 @@ int main(void)
 
 void oledshow_MainPage(void)
 {
-    sprintf(str, "Mode: user");
+    sprintf(str, "user-ID");
     OLED_ShowString(0,0,str,8);
     
-    sprintf(str, "enter your PIN:");
+    sprintf(str, "Enter Password:");
     OLED_ShowString(0,2,str,8);
     
     // 清空输入密码
@@ -119,7 +119,7 @@ void oledshow_MasterPage(void)
     sprintf(str, "change: user");
     OLED_ShowString(0,0,str,8);
     
-    sprintf(str, "change your PIN:");
+    sprintf(str, "Change Password:");
     OLED_ShowString(0,2,str,8);
     
     // 清空输入密码
@@ -352,39 +352,38 @@ void Oled_Task(void)
                                       master_password[0], master_password[1], master_password[2], master_password[3]);
     OLED_ShowString(70,7,str,8);
    
-    
-    // 是否开门
-    if(door_flag)
-    {
-        sprintf(str, "door open ");
-        OLED_ShowString(0,6,str,8);
-        
-        P0 = 0xef;
-        
-        delay_ms(1000);
-        door_flag = 0;
-    }
-    else
-    {
-        sprintf(str, "door close");
-        OLED_ShowString(0,6,str,8);
-        
-        P0 = 0xff;
-    }
-    
     // 主界面
     if(page_flag == 0)
-    {
+    {   
+        // 是否开门
+        if(door_flag)
+        {
+            sprintf(str, "door open ");
+            OLED_ShowString(0,6,str,8);
+            
+            P07 = 0;
+            
+            delay_ms(1000);
+            door_flag = 0;
+        }
+        else
+        {
+            sprintf(str, "door close");
+            OLED_ShowString(0,6,str,8);
+            
+            P07 = 1;
+        }
+        
         // 用户模式
         if(Mode == 0)
         {
-            sprintf(str, "Mode: user  ");
+            sprintf(str, "user-ID  ");
             OLED_ShowString(0,0,str,8);
         }
         // 管理员模式
         else
         {
-            sprintf(str, "Mode: master");
+            sprintf(str, "master-ID");
             OLED_ShowString(0,0,str,8);
             
             // 成功进入管理员界面
