@@ -1,4 +1,4 @@
-C51 COMPILER V9.54   MAIN                                                                  01/02/2025 14:15:32 PAGE 1   
+C51 COMPILER V9.54   MAIN                                                                  01/05/2025 19:26:46 PAGE 1   
 
 
 C51 COMPILER V9.54, COMPILATION OF MODULE MAIN
@@ -27,494 +27,525 @@ line level    source
   16          //其他函数
   17          void oledshow_MainPage(void);
   18          void oledshow_MasterPage(void);
-  19          void password_clear(void);
-  20          bit str_judge(int *str1, int *str2);
-  21          void str_copy(int *str1, int *str2);
-  22          
-  23          /*****************************************外设全局变量***********************************************/
-  24          
-  25          //led专用变量
-  26          uint8_t ucled;
-  27          
-  28          //按键专用变量
-  29          uint8_t Key_Value;
-  30          uint8_t Key_Down;
-  31          uint8_t Key_Old;
-  32          
-  33          //任务调度专用变量
-  34          uint16_t data TaskTimer[TASKNUM_MAX];
-  35          TaskStruct data Task[] = {
-  36              //{Led_Task, 100},
-  37                  {key_Task, 10},
-  38                  {Oled_Task, 1000}
-  39          };
-  40          /*****************************************用户全局变量***********************************************/
-  41          char str[20];
-  42          //uint8_t eepromBuf[10];
-  43          int count = 0;
-  44          volatile char password[4] = "____";
-  45          volatile char user_password[4] = "1234";
-  46          volatile char master_password[4] = "4321";
-  47          
-  48          uint8_t index = 0;
-  49          bit door_flag = 0;
-  50          bit Mode = 0;
-  51          bit master_enter_flag = 0;
-  52          bit change_flag = 0;
-  53          bit page_flag = 0;
-C51 COMPILER V9.54   MAIN                                                                  01/02/2025 14:15:32 PAGE 2   
+  19          void door_motor(void);
+  20          void password_clear(void);
+  21          bit str_judge(int *str1, int *str2);
+  22          void str_copy(int *str1, int *str2);
+  23          
+  24          /*****************************************外设全局变量***********************************************/
+  25          
+  26          //led专用变量
+  27          uint8_t ucled;
+  28          
+  29          //按键专用变量
+  30          uint8_t Key_Value;
+  31          uint8_t Key_Down;
+  32          uint8_t Key_Old;
+  33          
+  34          //任务调度专用变量
+  35          uint16_t data TaskTimer[TASKNUM_MAX];
+  36          TaskStruct data Task[] = {
+  37              {Led_Task, 1},
+  38                  {key_Task, 10},
+  39                  {Oled_Task, 1000}
+  40          };
+  41          /*****************************************用户全局变量***********************************************/
+  42          char str[20];
+  43          //uint8_t eepromBuf[10];
+  44          int count = 0;
+  45          volatile char password[4] = "____";
+  46          volatile char user_password[4] = "1234";
+  47          volatile char master_password[4] = "4321";
+  48          
+  49          uint8_t index = 0;
+  50          bit door_flag = 0;
+  51          bit Mode = 0;
+  52          bit master_enter_flag = 0;
+  53          bit change_flag = 0;
+C51 COMPILER V9.54   MAIN                                                                  01/05/2025 19:26:46 PAGE 2   
 
-  54          bit main_enter_flag = 0;
-  55          
-  56          //uint8_t menuKey_flag;
-  57          
-  58          /****************************************************************************************************/
-  59          
-  60          
-  61          /*------------------------------------------主函数--------------------------------------------------*/
-  62          int main(void)
-  63          {
-  64   1              Task_Init();
-  65   1          
-  66   1          //delay_ms(1000);
-  67   1          
-  68   1              OLED_Init();//初始化OLED
-  69   1              OLED_ColorTurn(0);//0正常显示，1 反色显示
-  70   1          OLED_DisplayTurn(0);//0正常显示 1 屏幕翻转显示
+  54          bit page_flag = 0;
+  55          bit main_enter_flag = 0;
+  56          
+  57          // 舵机
+  58          uint8_t count0 = 0;
+  59          int locktime = 0;
+  60          uint8_t jiaodu = 1;
+  61          
+  62          //uint8_t menuKey_flag;
+  63          
+  64          /****************************************************************************************************/
+  65          
+  66          
+  67          /*------------------------------------------主函数--------------------------------------------------*/
+  68          int main(void)
+  69          {
+  70   1              Task_Init();
   71   1          
-  72   1          oledshow_MainPage();
+  72   1          //delay_ms(1000);
   73   1          
-  74   1          //menu_init();
-  75   1          
-  76   1          //EEPROM_Write("hello", 0, 5);
-  77   1      //    EEPROM_Write((uint8_t *)user_password, 0, 4);
-  78   1      //    delay_ms(20);
-  79   1      //    EEPROM_Write((uint8_t *)master_password, 8, 4);
-  80   1          
-  81   1          EEPROM_Read((uint8_t *)user_password, 0, 4);
-  82   1          delay_ms(20);
-  83   1          EEPROM_Read((uint8_t *)master_password, 8, 4);
-  84   1          
-  85   1              Timer0_Init();
-  86   1          Uart1_Init();
-  87   1              EA = 1;
-  88   1          
-  89   1          //sprintf(str, "hello\n");
-  90   1          //UART_SendString("hello");
-  91   1              
-  92   1              while(1)
-  93   1              {
-  94   2                      TaskRun();
-  95   2              }
-  96   1      }
-  97          
-  98          void oledshow_MainPage(void)
-  99          {
- 100   1          sprintf(str, "user-ID");
- 101   1          OLED_ShowString(0,0,str,8);
- 102   1          
- 103   1          sprintf(str, "Enter Password:");
- 104   1          OLED_ShowString(0,2,str,8);
- 105   1          
- 106   1          // 清空输入密码
- 107   1          password_clear();    
- 108   1          sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
- 109   1          OLED_ShowString(0,4,str,8);
- 110   1          
- 111   1          // 门状态
- 112   1          sprintf(str, "door close");
- 113   1          OLED_ShowString(0,6,str,8);
- 114   1          
- 115   1      }
-C51 COMPILER V9.54   MAIN                                                                  01/02/2025 14:15:32 PAGE 3   
+  74   1              OLED_Init();//初始化OLED
+  75   1              OLED_ColorTurn(0);//0正常显示，1 反色显示
+  76   1          OLED_DisplayTurn(0);//0正常显示 1 屏幕翻转显示
+  77   1          
+  78   1          oledshow_MainPage();
+  79   1          
+  80   1          //menu_init();
+  81   1          
+  82   1          //EEPROM_Write("hello", 0, 5);
+  83   1      //    EEPROM_Write((uint8_t *)user_password, 0, 4);
+  84   1      //    delay_ms(20);
+  85   1      //    EEPROM_Write((uint8_t *)master_password, 8, 4);
+  86   1          
+  87   1          EEPROM_Read((uint8_t *)user_password, 0, 4);
+  88   1          delay_ms(20);
+  89   1          EEPROM_Read((uint8_t *)master_password, 8, 4);
+  90   1          
+  91   1              Timer0_Init();
+  92   1          Uart1_Init();
+  93   1              EA = 1;
+  94   1          
+  95   1          //sprintf(str, "hello\n");
+  96   1          //UART_SendString("hello");
+  97   1              
+  98   1              while(1)
+  99   1              {
+ 100   2                      TaskRun();
+ 101   2              }
+ 102   1      }
+ 103          
+ 104          void oledshow_MainPage(void)
+ 105          {
+ 106   1          sprintf(str, "user-ID");
+ 107   1          OLED_ShowString(0,0,str,8);
+ 108   1          
+ 109   1          sprintf(str, "Enter Password:");
+ 110   1          OLED_ShowString(0,2,str,8);
+ 111   1          
+ 112   1          // 清空输入密码
+ 113   1          password_clear();    
+ 114   1          sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
+ 115   1          OLED_ShowString(0,4,str,8);
+C51 COMPILER V9.54   MAIN                                                                  01/05/2025 19:26:46 PAGE 3   
 
- 116          
- 117          void oledshow_MasterPage(void)
- 118          {
- 119   1          sprintf(str, "change: user");
- 120   1          OLED_ShowString(0,0,str,8);
- 121   1          
- 122   1          sprintf(str, "Change Password:");
- 123   1          OLED_ShowString(0,2,str,8);
- 124   1          
- 125   1          // 清空输入密码
- 126   1          password_clear();    
- 127   1          sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
- 128   1          OLED_ShowString(0,4,str,8);
- 129   1          
- 130   1      }
- 131          
- 132          void password_clear(void)
- 133          {
- 134   1          password[0] = '_';
- 135   1          password[1] = '_';
- 136   1          password[2] = '_';
- 137   1          password[3] = '_';
- 138   1      }
- 139          
- 140          bit str_judge(char *str1, char *str2)
- 141          {
-*** WARNING C235 IN LINE 141 OF main.c: parameter 1: different types
-*** WARNING C235 IN LINE 141 OF main.c: parameter 2: different types
- 142   1          uint8_t i;
- 143   1          
- 144   1          for(i = 0; i < 4; i++)
- 145   1          {
- 146   2              if(str1[i] != str2[i])
- 147   2                  return 0;
- 148   2          }
- 149   1          return 1;
- 150   1      }
- 151          
- 152          void str_copy(char *str1, char *str2)
- 153          {
-*** WARNING C235 IN LINE 153 OF main.c: parameter 1: different types
-*** WARNING C235 IN LINE 153 OF main.c: parameter 2: different types
- 154   1          uint8_t i;
- 155   1          
- 156   1          for(i = 0; i < 4; i++)
- 157   1          {
- 158   2              str1[i] = str2[i];
- 159   2          }
- 160   1      }
- 161          
- 162          /*-----------------------------------------中断服务函数--------------------------------------------------*
+ 116   1          
+ 117   1          // 门状态
+ 118   1          sprintf(str, "door close");
+ 119   1          OLED_ShowString(0,6,str,8);
+ 120   1          
+ 121   1      }
+ 122          
+ 123          void oledshow_MasterPage(void)
+ 124          {
+ 125   1          sprintf(str, "change: user");
+ 126   1          OLED_ShowString(0,0,str,8);
+ 127   1          
+ 128   1          sprintf(str, "Change Password:");
+ 129   1          OLED_ShowString(0,2,str,8);
+ 130   1          
+ 131   1          // 清空输入密码
+ 132   1          password_clear();    
+ 133   1          sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
+ 134   1          OLED_ShowString(0,4,str,8);
+ 135   1          
+ 136   1      }
+ 137          
+ 138          void door_motor(void)
+ 139          {
+ 140   1          count0++;                                                                                   //中断次数，即：多少个0.5ms
+ 141   1              if(door_flag)                                                                   //锁状态-开时
+ 142   1              {
+ 143   2                      locktime++;                                                                             //锁开延时开始计时
+ 144   2              jiaodu = 2;
+ 145   2                      if(locktime == 1000)                                                    //到达1秒时
+ 146   2                      {
+ 147   3                              jiaodu = 1;                                                                     //舵机回到中间位置
+ 148   3                              door_flag = 0;                                                          //锁状态-关闭
+ 149   3                              locktime = 0;                                                           //清零计时
+ 150   3                      }
+ 151   2              }
+ 152   1                      
+ 153   1              if(count0 <= jiaodu) P07 = 1;           //高电平占空比由变量jiaodu控制，jiaodu=1时高电平0.5ms,jiaodu=5时高电平2.5m
+             -s
+ 154   1              if(count0 > jiaodu && count0 <= 20) P07 = 0;//低电平占空比，jiaodu=1时低电平19.5ms，jiaodu=5时低电平17.5m
+             -s
+ 155   1              if(count0 > 20) count0 = 0;                     //脉宽20ms
+ 156   1      }
+ 157          
+ 158          void password_clear(void)
+ 159          {
+ 160   1          password[0] = '_';
+ 161   1          password[1] = '_';
+ 162   1          password[2] = '_';
+ 163   1          password[3] = '_';
+ 164   1      }
+ 165          
+ 166          bit str_judge(char *str1, char *str2)
+ 167          {
+*** WARNING C235 IN LINE 167 OF main.c: parameter 1: different types
+*** WARNING C235 IN LINE 167 OF main.c: parameter 2: different types
+ 168   1          uint8_t i;
+ 169   1          
+ 170   1          for(i = 0; i < 4; i++)
+ 171   1          {
+ 172   2              if(str1[i] != str2[i])
+ 173   2                  return 0;
+C51 COMPILER V9.54   MAIN                                                                  01/05/2025 19:26:46 PAGE 4   
+
+ 174   2          }
+ 175   1          return 1;
+ 176   1      }
+ 177          
+ 178          void str_copy(char *str1, char *str2)
+ 179          {
+*** WARNING C235 IN LINE 179 OF main.c: parameter 1: different types
+*** WARNING C235 IN LINE 179 OF main.c: parameter 2: different types
+ 180   1          uint8_t i;
+ 181   1          
+ 182   1          for(i = 0; i < 4; i++)
+ 183   1          {
+ 184   2              str1[i] = str2[i];
+ 185   2          }
+ 186   1      }
+ 187          
+ 188          /*-----------------------------------------中断服务函数--------------------------------------------------*
              -/
- 163          void Timer0_Rountine(void)      interrupt 1
- 164          {
- 165   1              uint8_t i;
- 166   1          
- 167   1          // 手动重装
- 168   1          TL0 = 0x66;                         //设置定时初始值
- 169   1              TH0 = 0xFC;                             //设置定时初始值
- 170   1          
- 171   1              //任务定时器递减
- 172   1              for(i = 0; i < TASKNUM_MAX; i++)
-C51 COMPILER V9.54   MAIN                                                                  01/02/2025 14:15:32 PAGE 4   
+ 189          void Timer0_Rountine(void)      interrupt 1
+ 190          {
+ 191   1              uint8_t i;
+ 192   1          
+ 193   1          // 手动重装
+ 194   1          TL0 = 0x66;                         //设置定时初始值
+ 195   1              TH0 = 0xFC;                             //设置定时初始值
+ 196   1          
+ 197   1              //任务定时器递减
+ 198   1              for(i = 0; i < TASKNUM_MAX; i++)
+ 199   1                      if(TaskTimer[i])
+ 200   1                              TaskTimer[i]--;
+ 201   1          
+ 202   1          door_motor();        
+ 203   1      }
+ 204          
+ 205          void Uart1_Isr(void) interrupt 4
+ 206          {
+ 207   1              if (RI)                         //检测串口1接收中断
+ 208   1              {
+ 209   2              
+ 210   2                      RI = 0;                 //清除串口1接收中断请求位
+ 211   2              }
+ 212   1          
+ 213   1      //    if (TI)                           //检测串口1发送中断
+ 214   1      //    {
+ 215   1      //        
+ 216   1      //        TI = 0;
+ 217   1      //    }
+ 218   1      }
+ 219          
+ 220          /*-----------------------------------------具体任务--------------------------------------------------*/
+ 221          void Led_Task(void)
+ 222          {
+ 223   1          
+ 224   1          
+ 225   1      }       
+ 226          
+ 227          void key_Task(void)
+ 228          {
+ 229   1              // 三行代码数字滤波
+ 230   1              Key_Value = Key_Read();
+ 231   1              Key_Down = Key_Value&(Key_Value^Key_Old);
+ 232   1              Key_Old = Key_Value;
+C51 COMPILER V9.54   MAIN                                                                  01/05/2025 19:26:46 PAGE 5   
 
- 173   1                      if(TaskTimer[i])
- 174   1                              TaskTimer[i]--;
- 175   1      }
- 176          
- 177          void Uart1_Isr(void) interrupt 4
- 178          {
- 179   1              if (RI)                         //检测串口1接收中断
- 180   1              {
- 181   2              
- 182   2                      RI = 0;                 //清除串口1接收中断请求位
- 183   2              }
- 184   1          
- 185   1      //    if (TI)                           //检测串口1发送中断
- 186   1      //    {
- 187   1      //        
- 188   1      //        TI = 0;
- 189   1      //    }
- 190   1      }
- 191          
- 192          /*-----------------------------------------具体任务--------------------------------------------------*/
- 193          void Led_Task(void)
- 194          {
- 195   1          //P0 ^= 0x01;
- 196   1      }       
- 197          
- 198          void key_Task(void)
- 199          {
- 200   1              // 三行代码数字滤波
- 201   1              Key_Value = Key_Read();
- 202   1              Key_Down = Key_Value&(Key_Value^Key_Old);
- 203   1              Key_Old = Key_Value;
- 204   1              
- 205   1          // 切换用户/管理员模式
- 206   1          if(Key_Down == 13)
- 207   1          {
- 208   2              Mode ^= 1;
- 209   2          }
- 210   1          
- 211   1          // 选择修改用户/管理员密码
- 212   1          if(Key_Down == 14)
- 213   1          {
- 214   2              change_flag ^= 1;
- 215   2          }
- 216   1              
- 217   1          
- 218   1              switch(Key_Down)
- 219   1              {
- 220   2                      case 10:
- 221   2                  password[index++] = '0';
- 222   2                  sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
- 223   2                  OLED_ShowString(0,4,str,8);
- 224   2              break;
- 225   2              
- 226   2              case 1:
- 227   2                  password[index++] = '1';
- 228   2                  sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
- 229   2                  OLED_ShowString(0,4,str,8);
- 230   2              break;
- 231   2              
- 232   2              case 2:
- 233   2                  password[index++] = '2';
- 234   2                  sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
-C51 COMPILER V9.54   MAIN                                                                  01/02/2025 14:15:32 PAGE 5   
+ 233   1              
+ 234   1          // 切换用户/管理员模式
+ 235   1          if(Key_Down == 13)
+ 236   1          {
+ 237   2              Mode ^= 1;
+ 238   2          }
+ 239   1          
+ 240   1          // 选择修改用户/管理员密码
+ 241   1          if(Key_Down == 14)
+ 242   1          {
+ 243   2              change_flag ^= 1;
+ 244   2          }
+ 245   1              
+ 246   1          
+ 247   1              switch(Key_Down)
+ 248   1              {
+ 249   2                      case 10:
+ 250   2                  password[index++] = '0';
+ 251   2                  sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
+ 252   2                  OLED_ShowString(0,4,str,8);
+ 253   2              break;
+ 254   2              
+ 255   2              case 1:
+ 256   2                  password[index++] = '1';
+ 257   2                  sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
+ 258   2                  OLED_ShowString(0,4,str,8);
+ 259   2              break;
+ 260   2              
+ 261   2              case 2:
+ 262   2                  password[index++] = '2';
+ 263   2                  sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
+ 264   2                  OLED_ShowString(0,4,str,8);
+ 265   2              break;
+ 266   2              
+ 267   2              case 3:
+ 268   2                  password[index++] = '3';
+ 269   2                  sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
+ 270   2                  OLED_ShowString(0,4,str,8);
+ 271   2                      break;
+ 272   2              
+ 273   2              case 4:
+ 274   2                  password[index++] = '4';
+ 275   2                  sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
+ 276   2                  OLED_ShowString(0,4,str,8);
+ 277   2                      break;
+ 278   2              
+ 279   2              case 5:
+ 280   2                  password[index++] = '5';
+ 281   2                  sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
+ 282   2                  OLED_ShowString(0,4,str,8);
+ 283   2                      break;
+ 284   2              
+ 285   2              case 6:
+ 286   2                  password[index++] = '6';
+ 287   2                  sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
+ 288   2                  OLED_ShowString(0,4,str,8);
+ 289   2                      break;
+ 290   2              
+ 291   2              case 7:
+ 292   2                  password[index++] = '7';
+ 293   2                  sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
+ 294   2                  OLED_ShowString(0,4,str,8);
+C51 COMPILER V9.54   MAIN                                                                  01/05/2025 19:26:46 PAGE 6   
 
- 235   2                  OLED_ShowString(0,4,str,8);
- 236   2              break;
- 237   2              
- 238   2              case 3:
- 239   2                  password[index++] = '3';
- 240   2                  sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
- 241   2                  OLED_ShowString(0,4,str,8);
- 242   2                      break;
- 243   2              
- 244   2              case 4:
- 245   2                  password[index++] = '4';
- 246   2                  sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
- 247   2                  OLED_ShowString(0,4,str,8);
- 248   2                      break;
- 249   2              
- 250   2              case 5:
- 251   2                  password[index++] = '5';
- 252   2                  sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
- 253   2                  OLED_ShowString(0,4,str,8);
- 254   2                      break;
- 255   2              
- 256   2              case 6:
- 257   2                  password[index++] = '6';
- 258   2                  sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
- 259   2                  OLED_ShowString(0,4,str,8);
- 260   2                      break;
- 261   2              
- 262   2              case 7:
- 263   2                  password[index++] = '7';
- 264   2                  sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
- 265   2                  OLED_ShowString(0,4,str,8);
- 266   2                      break;
- 267   2              
- 268   2              case 8:
- 269   2                  password[index++] = '8';
- 270   2                  sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
- 271   2                  OLED_ShowString(0,4,str,8);
- 272   2                      break;
- 273   2              
- 274   2              case 9:
- 275   2                  password[index++] = '9';
- 276   2                  sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
- 277   2                  OLED_ShowString(0,4,str,8);
- 278   2                      break;
- 279   2              
- 280   2              default:
- 281   2              break;
- 282   2              }
- 283   1          
- 284   1          // 输入完毕，判断密码是否正确
- 285   1          if(index > 3)
- 286   1          {
- 287   2              // 主界面
- 288   2              if(page_flag == 0)
- 289   2              {
- 290   3                  // 用户模式下
- 291   3                  if(Mode == 0)
- 292   3                  {
- 293   4                      door_flag = str_judge(password, user_password);
- 294   4                      // 清空输入密码
- 295   4                      password_clear();
- 296   4                      sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
-C51 COMPILER V9.54   MAIN                                                                  01/02/2025 14:15:32 PAGE 6   
-
- 297   4                      OLED_ShowString(0,4,str,8);
- 298   4                      
- 299   4                  }
- 300   3                  // 管理员模式下
- 301   3                  else
- 302   3                  {
- 303   4                      master_enter_flag = str_judge(password, master_password);
- 304   4                      // 清空输入密码
- 305   4                      password_clear();
- 306   4                      sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
- 307   4                      OLED_ShowString(0,4,str,8);
- 308   4                      
- 309   4                  }
- 310   3              }
- 311   2              // 管理员界面
- 312   2              else
- 313   2              {
- 314   3                  // 更改用户密码
- 315   3                  if(change_flag == 0)
- 316   3                  {
- 317   4                      str_copy(user_password, password);
- 318   4                      
- 319   4                      EEPROM_Write((uint8_t *)user_password, 0, 4);
- 320   4                      
- 321   4                      // 清空输入密码
- 322   4                      password_clear();
- 323   4                      sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
- 324   4                      OLED_ShowString(0,4,str,8);
- 325   4                  }
- 326   3                  // 更改管理员密码
- 327   3                  else
- 328   3                  {
- 329   4                      str_copy(master_password, password);
- 330   4                      
- 331   4                      EEPROM_Write((uint8_t *)master_password, 8, 4);
- 332   4                      
+ 295   2                      break;
+ 296   2              
+ 297   2              case 8:
+ 298   2                  password[index++] = '8';
+ 299   2                  sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
+ 300   2                  OLED_ShowString(0,4,str,8);
+ 301   2                      break;
+ 302   2              
+ 303   2              case 9:
+ 304   2                  password[index++] = '9';
+ 305   2                  sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
+ 306   2                  OLED_ShowString(0,4,str,8);
+ 307   2                      break;
+ 308   2              
+ 309   2              default:
+ 310   2              break;
+ 311   2              }
+ 312   1          
+ 313   1          // 输入完毕，判断密码是否正确
+ 314   1          if(index > 3)
+ 315   1          {
+ 316   2              // 主界面
+ 317   2              if(page_flag == 0)
+ 318   2              {
+ 319   3                  // 用户模式下
+ 320   3                  if(Mode == 0)
+ 321   3                  {
+ 322   4                      door_flag = str_judge(password, user_password);
+ 323   4                      // 清空输入密码
+ 324   4                      password_clear();
+ 325   4                      sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
+ 326   4                      OLED_ShowString(0,4,str,8);
+ 327   4                      
+ 328   4                  }
+ 329   3                  // 管理员模式下
+ 330   3                  else
+ 331   3                  {
+ 332   4                      master_enter_flag = str_judge(password, master_password);
  333   4                      // 清空输入密码
  334   4                      password_clear();
  335   4                      sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
  336   4                      OLED_ShowString(0,4,str,8);
- 337   4                  }
- 338   3                  main_enter_flag = 1;
+ 337   4                      
+ 338   4                  }
  339   3              }
- 340   2              
- 341   2              
- 342   2              
- 343   2              index = 0;
- 344   2          }
- 345   1             
- 346   1      }
- 347          
- 348          void Oled_Task(void)
- 349          {
- 350   1          // 调试代码
- 351   1          sprintf(str, "%c%c%c%c-%c%c%c%c", user_password[0], user_password[1], user_password[2], user_password[
-             -3],
- 352   1                                            master_password[0], master_password[1], master_password[2], master_p
-             -assword[3]);
- 353   1          OLED_ShowString(70,7,str,8);
- 354   1         
- 355   1          // 主界面
- 356   1          if(page_flag == 0)
-C51 COMPILER V9.54   MAIN                                                                  01/02/2025 14:15:32 PAGE 7   
+ 340   2              // 管理员界面
+ 341   2              else
+ 342   2              {
+ 343   3                  // 更改用户密码
+ 344   3                  if(change_flag == 0)
+ 345   3                  {
+ 346   4                      str_copy(user_password, password);
+ 347   4                      
+ 348   4                      EEPROM_Write((uint8_t *)user_password, 0, 4);
+ 349   4                      
+ 350   4                      // 清空输入密码
+ 351   4                      password_clear();
+ 352   4                      sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
+ 353   4                      OLED_ShowString(0,4,str,8);
+ 354   4                  }
+ 355   3                  // 更改管理员密码
+ 356   3                  else
+C51 COMPILER V9.54   MAIN                                                                  01/05/2025 19:26:46 PAGE 7   
 
- 357   1          {   
- 358   2              // 是否开门
- 359   2              if(door_flag)
- 360   2              {
- 361   3                  sprintf(str, "door open ");
- 362   3                  OLED_ShowString(0,6,str,8);
- 363   3                  
- 364   3                  P07 = 0;
- 365   3                  
- 366   3                  delay_ms(1000);
- 367   3                  door_flag = 0;
+ 357   3                  {
+ 358   4                      str_copy(master_password, password);
+ 359   4                      
+ 360   4                      EEPROM_Write((uint8_t *)master_password, 8, 4);
+ 361   4                      
+ 362   4                      // 清空输入密码
+ 363   4                      password_clear();
+ 364   4                      sprintf(str, "     %c  %c  %c  %c", password[0], password[1], password[2], password[3]);
+ 365   4                      OLED_ShowString(0,4,str,8);
+ 366   4                  }
+ 367   3                  main_enter_flag = 1;
  368   3              }
- 369   2              else
- 370   2              {
- 371   3                  sprintf(str, "door close");
- 372   3                  OLED_ShowString(0,6,str,8);
- 373   3                  
- 374   3                  P07 = 1;
- 375   3              }
- 376   2              
- 377   2              // 用户模式
- 378   2              if(Mode == 0)
- 379   2              {
- 380   3                  sprintf(str, "user-ID  ");
- 381   3                  OLED_ShowString(0,0,str,8);
- 382   3              }
- 383   2              // 管理员模式
- 384   2              else
- 385   2              {
- 386   3                  sprintf(str, "master-ID");
- 387   3                  OLED_ShowString(0,0,str,8);
- 388   3                  
- 389   3                  // 成功进入管理员界面
- 390   3                  if(master_enter_flag)
- 391   3                  {
- 392   4                      OLED_Clear();
- 393   4                      oledshow_MasterPage();
- 394   4                      
- 395   4                      door_flag = 0;
- 396   4                      Mode = 0;
- 397   4                      master_enter_flag = 0;
- 398   4                      change_flag = 0;
- 399   4                      page_flag = 1;
- 400   4                      main_enter_flag = 0;
- 401   4                  }
- 402   3              }
- 403   2          }
- 404   1          // 管理员界面
- 405   1          else
- 406   1          {
- 407   2              // 更改用户密码
- 408   2              if(change_flag == 0)
- 409   2              {
- 410   3                  sprintf(str, "change: user  ");
- 411   3                  OLED_ShowString(0,0,str,8);
- 412   3              }
- 413   2              // 更改管理员密码
- 414   2              else
- 415   2              {
- 416   3                  sprintf(str, "change: master");
- 417   3                  OLED_ShowString(0,0,str,8);
- 418   3              }
-C51 COMPILER V9.54   MAIN                                                                  01/02/2025 14:15:32 PAGE 8   
+ 369   2              
+ 370   2              
+ 371   2              
+ 372   2              index = 0;
+ 373   2          }
+ 374   1             
+ 375   1      }
+ 376          
+ 377          void Oled_Task(void)
+ 378          {
+ 379   1          // 调试代码
+ 380   1          sprintf(str, "%c%c%c%c-%c%c%c%c", user_password[0], user_password[1], user_password[2], user_password[
+             -3],
+ 381   1                                            master_password[0], master_password[1], master_password[2], master_p
+             -assword[3]);
+ 382   1          OLED_ShowString(70,7,str,8);
+ 383   1         
+ 384   1          // 主界面
+ 385   1          if(page_flag == 0)
+ 386   1          {   
+ 387   2              // 是否开门
+ 388   2              if(door_flag)
+ 389   2              {
+ 390   3                  sprintf(str, "door open ");
+ 391   3                  OLED_ShowString(0,6,str,8);
+ 392   3                  
+ 393   3                  P06 = 0;
+ 394   3      //            
+ 395   3      //            delay_ms(1000);
+ 396   3      //            door_flag = 0;
+ 397   3              }
+ 398   2              else
+ 399   2              {
+ 400   3                  sprintf(str, "door close");
+ 401   3                  OLED_ShowString(0,6,str,8);
+ 402   3                  
+ 403   3                  P06 = 1;
+ 404   3              }
+ 405   2              
+ 406   2              // 用户模式
+ 407   2              if(Mode == 0)
+ 408   2              {
+ 409   3                  sprintf(str, "user-ID  ");
+ 410   3                  OLED_ShowString(0,0,str,8);
+ 411   3              }
+ 412   2              // 管理员模式
+ 413   2              else
+ 414   2              {
+ 415   3                  sprintf(str, "master-ID");
+ 416   3                  OLED_ShowString(0,0,str,8);
+C51 COMPILER V9.54   MAIN                                                                  01/05/2025 19:26:46 PAGE 8   
 
- 419   2              
- 420   2              // 成功返回主界面
- 421   2              if(main_enter_flag)
- 422   2              {
- 423   3                  OLED_Clear();
- 424   3                  oledshow_MainPage();
- 425   3                  
- 426   3                  // 退回主界面用户模式
- 427   3                  door_flag = 0;
- 428   3                  Mode = 0;
- 429   3                  master_enter_flag = 0;
- 430   3                  change_flag = 0;
- 431   3                  page_flag = 0;
- 432   3                  main_enter_flag = 0;
- 433   3              }
- 434   2          }
- 435   1          
- 436   1          
- 437   1      }
- 438          
- 439          /*-----------------------------------------任务调度--------------------------------------------------*/
- 440          void Task_Init(void)
- 441          {
- 442   1              uint8_t NTask;
- 443   1              for(NTask = 0; NTask < sizeof(Task)/sizeof(Task[0]); NTask++)
- 444   1              {
- 445   2                      TaskTimer[NTask] = Task[NTask].TaskPeriod;
- 446   2              }
- 447   1      }
- 448          
- 449          void TaskRun(void)
- 450          {
- 451   1              uint8_t NTask;
- 452   1              for(NTask = 0; NTask < sizeof(Task)/sizeof(Task[0]); NTask++)
- 453   1              {
- 454   2                      if(TaskTimer[NTask] == 0)
- 455   2                      {
- 456   3                              TaskTimer[NTask] = Task[NTask].TaskPeriod;
- 457   3                              (Task[NTask].pTask)();
- 458   3                      }
- 459   2              }
- 460   1      }
- 461          
- 462          
- 463          
- 464          
- 465          
- 466          
+ 417   3                  
+ 418   3                  // 成功进入管理员界面
+ 419   3                  if(master_enter_flag)
+ 420   3                  {
+ 421   4                      OLED_Clear();
+ 422   4                      oledshow_MasterPage();
+ 423   4                      
+ 424   4                      door_flag = 0;
+ 425   4                      Mode = 0;
+ 426   4                      master_enter_flag = 0;
+ 427   4                      change_flag = 0;
+ 428   4                      page_flag = 1;
+ 429   4                      main_enter_flag = 0;
+ 430   4                  }
+ 431   3              }
+ 432   2          }
+ 433   1          // 管理员界面
+ 434   1          else
+ 435   1          {
+ 436   2              // 更改用户密码
+ 437   2              if(change_flag == 0)
+ 438   2              {
+ 439   3                  sprintf(str, "change: user  ");
+ 440   3                  OLED_ShowString(0,0,str,8);
+ 441   3              }
+ 442   2              // 更改管理员密码
+ 443   2              else
+ 444   2              {
+ 445   3                  sprintf(str, "change: master");
+ 446   3                  OLED_ShowString(0,0,str,8);
+ 447   3              }
+ 448   2              
+ 449   2              // 成功返回主界面
+ 450   2              if(main_enter_flag)
+ 451   2              {
+ 452   3                  OLED_Clear();
+ 453   3                  oledshow_MainPage();
+ 454   3                  
+ 455   3                  // 退回主界面用户模式
+ 456   3                  door_flag = 0;
+ 457   3                  Mode = 0;
+ 458   3                  master_enter_flag = 0;
+ 459   3                  change_flag = 0;
+ 460   3                  page_flag = 0;
+ 461   3                  main_enter_flag = 0;
+ 462   3              }
+ 463   2          }
+ 464   1          
+ 465   1          
+ 466   1      }
  467          
- 468          
- 469          
- 470          
- 471          
- 472          
- 473          
- 474          
- 475          
+ 468          /*-----------------------------------------任务调度--------------------------------------------------*/
+ 469          void Task_Init(void)
+ 470          {
+ 471   1              uint8_t NTask;
+ 472   1              for(NTask = 0; NTask < sizeof(Task)/sizeof(Task[0]); NTask++)
+ 473   1              {
+ 474   2                      TaskTimer[NTask] = Task[NTask].TaskPeriod;
+ 475   2              }
+ 476   1      }
+ 477          
+ 478          void TaskRun(void)
+C51 COMPILER V9.54   MAIN                                                                  01/05/2025 19:26:46 PAGE 9   
+
+ 479          {
+ 480   1              uint8_t NTask;
+ 481   1              for(NTask = 0; NTask < sizeof(Task)/sizeof(Task[0]); NTask++)
+ 482   1              {
+ 483   2                      if(TaskTimer[NTask] == 0)
+ 484   2                      {
+ 485   3                              TaskTimer[NTask] = Task[NTask].TaskPeriod;
+ 486   3                              (Task[NTask].pTask)();
+ 487   3                      }
+ 488   2              }
+ 489   1      }
+ 490          
+ 491          
+ 492          
+ 493          
+ 494          
+ 495          
+ 496          
+ 497          
+ 498          
+ 499          
+ 500          
+ 501          
+ 502          
+ 503          
+ 504          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   1659    ----
+   CODE SIZE        =   1743    ----
    CONSTANT SIZE    =   1188    ----
-C51 COMPILER V9.54   MAIN                                                                  01/02/2025 14:15:32 PAGE 9   
-
    XDATA SIZE       =   ----    ----
-   PDATA SIZE       =     39      13
-   DATA SIZE        =     18    ----
+   PDATA SIZE       =     43      13
+   DATA SIZE        =     23    ----
    IDATA SIZE       =   ----    ----
    BIT SIZE         =      6    ----
 END OF MODULE INFORMATION.

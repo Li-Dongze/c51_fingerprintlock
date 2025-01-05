@@ -16,6 +16,7 @@ void Oled_Task(void);
 //其他函数
 void oledshow_MainPage(void);
 void oledshow_MasterPage(void);
+void door_motor(void);
 void password_clear(void);
 bit str_judge(int *str1, int *str2);
 void str_copy(int *str1, int *str2);
@@ -33,7 +34,7 @@ uint8_t Key_Old;
 //任务调度专用变量
 uint16_t data TaskTimer[TASKNUM_MAX];
 TaskStruct data Task[] = {
-    //{Led_Task, 100},
+    {Led_Task, 1},
 	{key_Task, 10},
 	{Oled_Task, 1000}
 };
@@ -52,6 +53,11 @@ bit master_enter_flag = 0;
 bit change_flag = 0;
 bit page_flag = 0;
 bit main_enter_flag = 0;
+
+// 舵机
+uint8_t count0 = 0;
+int locktime = 0;
+uint8_t jiaodu = 1;
 
 //uint8_t menuKey_flag;
 
@@ -129,6 +135,26 @@ void oledshow_MasterPage(void)
     
 }
 
+void door_motor(void)
+{
+    count0++;											//中断次数，即：多少个0.5ms
+	if(door_flag)									//锁状态-开时
+	{
+		locktime++;										//锁开延时开始计时
+        jiaodu = 2;
+		if(locktime == 1000)							//到达1秒时
+		{
+			jiaodu = 1;									//舵机回到中间位置
+			door_flag = 0;								//锁状态-关闭
+			locktime = 0;								//清零计时
+		}
+	}
+		
+	if(count0 <= jiaodu) P07 = 1;		//高电平占空比由变量jiaodu控制，jiaodu=1时高电平0.5ms,jiaodu=5时高电平2.5ms
+	if(count0 > jiaodu && count0 <= 20) P07 = 0;//低电平占空比，jiaodu=1时低电平19.5ms，jiaodu=5时低电平17.5ms
+	if(count0 > 20) count0 = 0;			//脉宽20ms
+}
+
 void password_clear(void)
 {
     password[0] = '_';
@@ -172,6 +198,8 @@ void Timer0_Rountine(void)	interrupt 1
 	for(i = 0; i < TASKNUM_MAX; i++)
 		if(TaskTimer[i])
 			TaskTimer[i]--;
+    
+    door_motor();        
 }
 
 void Uart1_Isr(void) interrupt 4
@@ -192,7 +220,8 @@ void Uart1_Isr(void) interrupt 4
 /*-----------------------------------------具体任务--------------------------------------------------*/
 void Led_Task(void)
 {
-    //P0 ^= 0x01;
+    
+    
 }	
 
 void key_Task(void)
@@ -361,17 +390,17 @@ void Oled_Task(void)
             sprintf(str, "door open ");
             OLED_ShowString(0,6,str,8);
             
-            P07 = 0;
-            
-            delay_ms(1000);
-            door_flag = 0;
+            P06 = 0;
+//            
+//            delay_ms(1000);
+//            door_flag = 0;
         }
         else
         {
             sprintf(str, "door close");
             OLED_ShowString(0,6,str,8);
             
-            P07 = 1;
+            P06 = 1;
         }
         
         // 用户模式
