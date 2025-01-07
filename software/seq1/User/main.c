@@ -34,9 +34,9 @@ uint8_t Key_Old;
 //任务调度专用变量
 uint16_t data TaskTimer[TASKNUM_MAX];
 TaskStruct data Task[] = {
-    {Led_Task, 1},
-	{key_Task, 10},
-	{Oled_Task, 1000}
+    //{Led_Task, 1},
+	{key_Task, 20},
+	{Oled_Task, 4000}
 };
 /*****************************************用户全局变量***********************************************/
 char str[20];
@@ -55,9 +55,9 @@ bit page_flag = 0;
 bit main_enter_flag = 0;
 
 // 舵机
-uint8_t count0 = 0;
-int locktime = 0;
-uint8_t jiaodu = 1;
+volatile uint8_t count0 = 0;
+volatile int locktime = 0;
+volatile uint8_t jiaodu = 1;
 
 //uint8_t menuKey_flag;
 
@@ -141,8 +141,8 @@ void door_motor(void)
 	if(door_flag)									//锁状态-开时
 	{
 		locktime++;										//锁开延时开始计时
-        jiaodu = 2;
-		if(locktime == 1000)							//到达1秒时
+        jiaodu = 3;
+		if(locktime >= 2000)							//到达1秒时
 		{
 			jiaodu = 1;									//舵机回到中间位置
 			door_flag = 0;								//锁状态-关闭
@@ -151,8 +151,8 @@ void door_motor(void)
 	}
 		
 	if(count0 <= jiaodu) P07 = 1;		//高电平占空比由变量jiaodu控制，jiaodu=1时高电平0.5ms,jiaodu=5时高电平2.5ms
-	if(count0 > jiaodu && count0 <= 20) P07 = 0;//低电平占空比，jiaodu=1时低电平19.5ms，jiaodu=5时低电平17.5ms
-	if(count0 > 20) count0 = 0;			//脉宽20ms
+	if(count0 > jiaodu && count0 <= 40) P07 = 0;//低电平占空比，jiaodu=1时低电平19.5ms，jiaodu=5时低电平17.5ms
+	if(count0 > 40) count0 = 0;			//脉宽20ms
 }
 
 void password_clear(void)
@@ -191,14 +191,14 @@ void Timer0_Rountine(void)	interrupt 1
 	uint8_t i;
     
     // 手动重装
-    TL0 = 0x66;				//设置定时初始值
-	TH0 = 0xFC;				//设置定时初始值
+    TL0 = 0x33;				//设置定时初始值
+	TH0 = 0xFE;				//设置定时初始值
     
 	//任务定时器递减
 	for(i = 0; i < TASKNUM_MAX; i++)
 		if(TaskTimer[i])
 			TaskTimer[i]--;
-    
+        
     door_motor();        
 }
 
@@ -220,8 +220,11 @@ void Uart1_Isr(void) interrupt 4
 /*-----------------------------------------具体任务--------------------------------------------------*/
 void Led_Task(void)
 {
+    //EA = 0;
     
+    //door_motor();
     
+    //EA = 1;
 }	
 
 void key_Task(void)
@@ -243,7 +246,7 @@ void key_Task(void)
         change_flag ^= 1;
     }
         
-    
+    // 输入密码
 	switch(Key_Down)
 	{
 		case 10:
@@ -375,12 +378,7 @@ void key_Task(void)
 }
 
 void Oled_Task(void)
-{
-    // 调试代码
-    sprintf(str, "%c%c%c%c-%c%c%c%c", user_password[0], user_password[1], user_password[2], user_password[3],
-                                      master_password[0], master_password[1], master_password[2], master_password[3]);
-    OLED_ShowString(70,7,str,8);
-   
+{  
     // 主界面
     if(page_flag == 0)
     {   
@@ -391,9 +389,7 @@ void Oled_Task(void)
             OLED_ShowString(0,6,str,8);
             
             P06 = 0;
-//            
-//            delay_ms(1000);
-//            door_flag = 0;
+//            door_flag = 0;            
         }
         else
         {
@@ -462,6 +458,10 @@ void Oled_Task(void)
         }
     }
     
+    // 调试代码
+    sprintf(str, "count=%d,%c%c%c%c-%c%c%c%c", count++, user_password[0], user_password[1], user_password[2], user_password[3],
+                                      master_password[0], master_password[1], master_password[2], master_password[3]);
+    OLED_ShowString(0,7,str,8);
     
 }
 

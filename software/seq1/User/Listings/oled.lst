@@ -1,4 +1,4 @@
-C51 COMPILER V9.54   OLED                                                                  01/05/2025 19:26:45 PAGE 1   
+C51 COMPILER V9.54   OLED                                                                  01/07/2025 19:48:31 PAGE 1   
 
 
 C51 COMPILER V9.54, COMPILATION OF MODULE OLED
@@ -62,7 +62,7 @@ line level    source
   51          {
   52   1              if(i==0)
   53   1                      {
-C51 COMPILER V9.54   OLED                                                                  01/05/2025 19:26:45 PAGE 2   
+C51 COMPILER V9.54   OLED                                                                  01/07/2025 19:48:31 PAGE 2   
 
   54   2                              OLED_WR_Byte(0xC8,OLED_CMD);//正常显示
   55   2                              OLED_WR_Byte(0xA1,OLED_CMD);
@@ -126,7 +126,7 @@ line level    source
  113   3                              OLED_SDA_Set();
  114   3          }
  115   2                      else
-C51 COMPILER V9.54   OLED                                                                  01/05/2025 19:26:45 PAGE 3   
+C51 COMPILER V9.54   OLED                                                                  01/07/2025 19:48:31 PAGE 3   
 
  116   2                      {
  117   3                              OLED_SDA_Clr();
@@ -190,7 +190,7 @@ line level    source
  175   2              } //更新显示
  176   1      }
  177          
-C51 COMPILER V9.54   OLED                                                                  01/05/2025 19:26:45 PAGE 4   
+C51 COMPILER V9.54   OLED                                                                  01/07/2025 19:48:31 PAGE 4   
 
  178          //在指定位置显示一个字符,包括部分字符
  179          //x:0~127
@@ -254,7 +254,7 @@ line level    source
  237   2                      if(sizey==8)x+=6;
  238   2                      else x+=sizey/2;
  239   2              }
-C51 COMPILER V9.54   OLED                                                                  01/05/2025 19:26:45 PAGE 5   
+C51 COMPILER V9.54   OLED                                                                  01/07/2025 19:48:31 PAGE 5   
 
  240   1      }
  241          ////显示汉字
@@ -318,7 +318,7 @@ line level    source
  299   1              OLED_WR_Byte(0xF1,OLED_CMD);//Set Pre-Charge as 15 Clocks & Discharge as 1 Clock
  300   1              OLED_WR_Byte(0xDA,OLED_CMD);//--set com pins hardware configuration
  301   1              OLED_WR_Byte(0x12,OLED_CMD);
-C51 COMPILER V9.54   OLED                                                                  01/05/2025 19:26:45 PAGE 6   
+C51 COMPILER V9.54   OLED                                                                  01/07/2025 19:48:31 PAGE 6   
 
  302   1              OLED_WR_Byte(0xDB,OLED_CMD);//--set vcomh
  303   1              OLED_WR_Byte(0x40,OLED_CMD);//Set VCOM Deselect Level
